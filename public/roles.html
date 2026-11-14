@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Roles</title>
+
+    <script src="shared/theme.js"></script>
+    <link rel="stylesheet" href="shared/theme.css">
+    <link rel="stylesheet" href="roles.css">
+</head>
+
+<body>
+
+    <main class="page">
+
+        <!-- Header -->
+        <header class="page-header">
+
+            <div>
+                <h1>Roles</h1>
+
+                <p>
+                    View individuals assigned to each role.
+                </p>
+            </div>
+
+        </header>
+
+
+        <!-- Tabs -->
+        <nav class="tabs" aria-label="User roles">
+
+            <button
+                type="button"
+                class="tab active"
+                data-tab="managers"
+            >
+                Managers
+
+                <span
+                    class="tab-count"
+                    id="managersCount"
+                >
+                    0
+                </span>
+            </button>
+
+
+            <button
+                type="button"
+                class="tab"
+                data-tab="representatives"
+            >
+                Representatives
+
+                <span
+                    class="tab-count"
+                    id="representativesCount"
+                >
+                    0
+                </span>
+            </button>
+
+
+            <button
+                type="button"
+                class="tab"
+                data-tab="administrators"
+            >
+                Administrators
+
+                <span
+                    class="tab-count"
+                    id="administratorsCount"
+                >
+                    0
+                </span>
+            </button>
+
+        </nav>
+
+
+        <!-- User list -->
+        <section
+            id="userList"
+            class="user-list"
+            aria-live="polite"
+        >
+            <!-- Users will be inserted here -->
+        </section>
+
+    </main>
+
+
+    <script src="roles.js"></script>
+
+</body>
+
+</html>

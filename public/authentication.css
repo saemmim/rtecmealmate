@@ -1,0 +1,218 @@
+/* Theme variables come from shared/theme.css */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 430px;
+    padding: 25px;
+}
+
+/* Brand */
+
+.brand {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.brand-icon {
+    font-size: 42px;
+    margin-bottom: 5px;
+}
+
+.brand h1 {
+    font-size: 30px;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.brand p {
+    color: var(--muted-text);
+    font-size: 14px;
+}
+
+/* Auth Card */
+
+.auth-card {
+    background: var(--surface-color);
+    border-radius: 14px;
+    padding: 25px;
+    box-shadow: 0 5px 25px var(--shadow-color);
+}
+
+/* Tabs */
+
+.auth-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 25px;
+}
+
+.tab {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--muted-text);
+    border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+    color: var(--text-color);
+    border-bottom: 2px solid var(--text-color);
+}
+
+/* Forms */
+
+.auth-form h2 {
+    font-size: 22px;
+    margin-bottom: 6px;
+    color: var(--text-color);
+}
+
+.form-subtitle {
+    color: var(--muted-text);
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+.form-group {
+    margin-bottom: 17px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 7px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-size: 15px;
+    outline: none;
+}
+
+/* Styling phone no field */
+
+.phone-input {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.country-code {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.phone-input input {
+    flex: 1;
+    padding: 12px 13px 12px 45px;
+}
+
+.form-group input:focus {
+    border-color: var(--text-color);
+}
+
+/* Form Options */
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 20px;
+    color: var(--muted-text);
+}
+
+.form-options .remember {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-options a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+/* Submit Button */
+
+.submit-btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    background: var(--button-bg);
+    color: var(--button-text);
+    font-size: 15px;
+    cursor: pointer;
+}
+
+
+.submit-btn:hover {
+    opacity: 0.9;
+}
+
+/* Authentication Message */
+
+.auth-message {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 15px;
+    color: var(--muted-text);
+}
+
+/* Utility */
+
+.hidden {
+    display: none;
+}
+
+/* Footer */
+
+.footer-text {
+    text-align: center;
+    color: var(--muted-text-strong);
+    font-size: 12px;
+    margin-top: 20px;
+}
+
+/* Mobile */
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 10px;
+    }
+
+    .auth-card {
+        padding: 15px;
+    }
+}

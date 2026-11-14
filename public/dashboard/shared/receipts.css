@@ -1,0 +1,628 @@
+/*
+|==========================================================================
+| shared/receipts.css
+|
+| Depends on the theme CSS variables already defined by the parent
+| dashboard's own stylesheet. All classes here are namespaced with a
+| "receipt-" prefix so they never collide with dashboard-level classes.
+|==========================================================================
+*/
+
+
+/* =========================================
+   Month switcher — very top, arrows either
+   side of the month name (same look as the
+   Calendar tab's month header)
+========================================= */
+
+.receipt-month-switcher {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+}
+
+.receipt-month-nav-button {
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    background: var(--surface-color);
+    color: var(--text-color);
+
+    font-size: 18px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.receipt-month-nav-button:hover:not(:disabled) {
+    background: var(--bg-color);
+}
+
+.receipt-month-nav-button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.receipt-month-label {
+    font-size: 15px;
+    font-weight: 650;
+}
+
+
+/* =========================================
+   Total expense summary — below the month
+   switcher, above the Add button
+========================================= */
+
+.receipt-total-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 14px 16px;
+
+    margin-bottom: 14px;
+
+    background: var(--surface-color);
+
+    border-radius: 14px;
+
+    box-shadow: 0 3px 12px var(--shadow-color);
+}
+
+.receipt-total-summary-label {
+    color: var(--muted-text);
+
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.receipt-total-summary-value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   Toolbar (Add button) — top of the list,
+   same placement as shared/bulletin.css
+========================================= */
+
+.receipt-toolbar {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-bottom: 14px;
+}
+
+.receipt-add-button {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 9px 16px;
+
+    border: 0;
+    border-radius: 9px;
+
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.receipt-add-button:hover {
+    opacity: 0.9;
+}
+
+.receipt-add-button:active {
+    transform: translateY(1px);
+}
+
+.receipt-add-button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+
+/* =========================================
+   Receipt list / card
+========================================= */
+
+.receipt-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 14px;
+}
+
+.receipt-card {
+    padding: 16px 18px;
+
+    background: var(--surface-color);
+
+    border-radius: 14px;
+
+    box-shadow: 0 3px 12px var(--shadow-color);
+
+    animation: receiptAppear 0.25s ease both;
+}
+
+@keyframes receiptAppear {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header: date + username on the left, edited chip + Edit on the right */
+
+.receipt-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 12px;
+}
+
+.receipt-date {
+    margin: 0 0 2px;
+
+    font-size: 15px;
+    font-weight: 650;
+}
+
+.receipt-meta {
+    margin: 0;
+
+    color: var(--muted-text);
+    font-size: 11.5px;
+}
+
+.receipt-header-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.receipt-edited-chip {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 3px 9px;
+
+    border-radius: 999px;
+
+    background: rgba(127, 127, 127, 0.14);
+    color: var(--muted-text-strong);
+
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Image — no fixed aspect ratio: full width, height follows naturally */
+
+.receipt-image {
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    margin-bottom: 12px;
+
+    border-radius: 10px;
+
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+}
+
+/* Items table — intentionally no <thead>/column headings */
+
+.receipt-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 13px;
+}
+
+.receipt-table td {
+    padding: 7px 4px;
+
+    text-align: left;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.receipt-table td.receipt-col-price {
+    text-align: right;
+
+    white-space: nowrap;
+}
+
+.receipt-total-row td {
+    border-bottom: 0;
+
+    padding-top: 10px;
+
+    font-weight: 700;
+}
+
+/* Edit button — same bordered-box look the Download button used to have */
+
+.receipt-edit-button {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 7px 13px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    background: var(--surface-color);
+    color: var(--text-color);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.receipt-edit-button:hover {
+    background: var(--bg-color);
+}
+
+
+/* =========================================
+   Add / Edit modal
+========================================= */
+
+.receipt-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    animation: receiptOverlayFade 0.2s ease both;
+}
+
+@keyframes receiptOverlayFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.receipt-modal-box {
+    width: 100%;
+    max-width: 430px;
+    max-height: 88vh;
+
+    overflow-y: auto;
+
+    padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+
+    background: var(--surface-color);
+
+    border-radius: 18px 18px 0 0;
+
+    animation: receiptModalSlideUp 0.25s ease both;
+}
+
+@media (min-width: 480px) {
+    .receipt-modal-overlay { align-items: center; }
+    .receipt-modal-box { border-radius: 18px; }
+}
+
+@keyframes receiptModalSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.receipt-modal-title {
+    margin: 0 0 16px;
+
+    font-size: 17px;
+    font-weight: 650;
+}
+
+.receipt-form-field {
+    margin-bottom: 14px;
+}
+
+.receipt-form-field label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 12.5px;
+    font-weight: 600;
+
+    color: var(--muted-text);
+}
+
+.receipt-form-field input[type="text"],
+.receipt-form-field input[type="number"],
+.receipt-form-field input[type="file"] {
+    width: 100%;
+
+    padding: 10px 12px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    border: 1px solid var(--input-border);
+    border-radius: 9px;
+
+    font: inherit;
+    font-size: 13.5px;
+}
+
+/* Date input — styled similar in spirit to the Home tab's day picker:
+   a plain bordered, rounded field at a comfortable tap height. */
+.receipt-date-input {
+    width: 100%;
+
+    height: 42px;
+
+    padding: 0 12px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    border: 1px solid var(--input-border);
+    border-radius: 9px;
+
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 550;
+}
+
+/* Image preview — same "no fixed aspect ratio" rule as the card image */
+.receipt-image-preview {
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    margin-top: 10px;
+
+    border-radius: 9px;
+
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+}
+
+/* Item rows editor */
+
+.receipt-items-editor {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-bottom: 10px;
+}
+
+.receipt-item-row {
+    display: flex;
+
+    gap: 8px;
+    align-items: center;
+}
+
+.receipt-item-row input[type="text"] {
+    flex: 2;
+
+    padding: 8px 10px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+
+    font: inherit;
+    font-size: 13px;
+}
+
+.receipt-item-row input[type="number"] {
+    flex: 1;
+
+    padding: 8px 10px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+
+    font: inherit;
+    font-size: 13px;
+}
+
+.receipt-item-remove {
+    flex-shrink: 0;
+
+    width: 30px;
+    height: 30px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    background: var(--surface-color);
+    color: var(--danger-color);
+
+    cursor: pointer;
+
+    font-size: 15px;
+    line-height: 1;
+}
+
+.receipt-add-item-button {
+    align-self: flex-start;
+
+    padding: 7px 12px;
+
+    border: 1px dashed var(--input-border);
+    border-radius: 8px;
+
+    background: transparent;
+    color: var(--text-color);
+
+    font-size: 12.5px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.receipt-items-total {
+    display: flex;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+
+    padding-top: 10px;
+
+    border-top: 1px solid var(--border-color);
+
+    font-size: 13.5px;
+    font-weight: 700;
+}
+
+.receipt-form-error {
+    margin: -4px 0 14px;
+
+    color: var(--danger-color);
+    font-size: 12.5px;
+}
+
+.receipt-modal-actions {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 6px;
+}
+
+.receipt-modal-actions button {
+    flex: 1;
+
+    height: 40px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+
+    background: var(--surface-color);
+    color: var(--text-color);
+
+    font-size: 13.5px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.receipt-modal-actions button.primary {
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    border-color: var(--button-bg);
+}
+
+.receipt-modal-actions button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+
+/* =========================================
+   Loading / empty / error states
+========================================= */
+
+.receipt-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 50px 20px;
+
+    color: var(--muted-text);
+
+    font-size: 13px;
+}
+
+.receipt-state-box {
+    padding: 40px 22px;
+
+    text-align: center;
+
+    background: var(--surface-color);
+
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+.receipt-state-title {
+    margin: 0 0 6px;
+
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.receipt-state-message {
+    margin: 0;
+
+    color: var(--muted-text);
+    font-size: 12.5px;
+}
+
+.receipt-retry-button {
+    margin-top: 16px;
+
+    padding: 8px 14px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    cursor: pointer;
+
+    font-size: 12.5px;
+    font-weight: 500;
+}

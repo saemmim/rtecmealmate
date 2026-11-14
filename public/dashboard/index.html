@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RTEC Meal Mate</title>
+
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="shared/bulletin.css">
+    <link rel="stylesheet" href="shared/receipts.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <main class="dashboard-content">
+
+            <!-- ============================================= -->
+            <!-- Receipts                                       -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="receipts" aria-labelledby="receiptsHeading">
+                <h2 id="receiptsHeading" class="section-heading">Receipts</h2>
+                <p class="section-subheading">View shopping receipts.</p>
+
+                <!-- shared/receipts.js renders everything inside this container -->
+                <div id="receipts-root" data-role="user"></div>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Bulletin                                       -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="bulletin" aria-labelledby="bulletinHeading">
+                <h2 id="bulletinHeading" class="section-heading">Bulletin</h2>
+                <p class="section-subheading">Announcements and messages for the hostel.</p>
+
+                <!-- shared/bulletin.js renders everything inside this container -->
+                <div id="bulletin-root" data-role="user"></div>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Home (default tab)                             -->
+            <!-- ============================================= -->
+            <section class="dashboard-section active" data-section="home" aria-labelledby="homeHeading">
+                <h2 id="homeHeading" class="section-heading">Home</h2>
+                <p class="section-subheading">Today's meal and this month at a glance.</p>
+
+                <!-- Today card: date on the left, meal status + guest meals on
+                     the right. Status sits at the top of the right column,
+                     guest meals at the bottom. The on/off control itself lives
+                     in its own card just below. -->
+                <div class="today-card" id="todayCard">
+
+                    <div class="today-card-date">
+                        <p class="today-card-date-value" id="todayDateValue">—</p>
+                    </div>
+
+                    
+                    <div class="today-card-status">
+                        
+                        <div class="today-card-status-row" id="mealStatusRow">
+                            <svg class="today-card-status-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/>
+                                <path d="M2.5 20.5h19"/>
+                                <path d="M9 8.2c0-1.2 1.4-1.4 1.4-2.7"/>
+                                <path d="M13.6 8.2c0-1.2 1.4-1.4 1.4-2.7"/>
+                            </svg>
+
+                            <div class="today-card-status-text">
+                                <span class="today-card-status-label">Meal Status:</span>
+                                <span class="today-card-status-value" id="mealStatusValue">—</span>
+                            </div>
+                        </div>
+                        
+                        <div class="today-card-divider"></div>
+                        
+                        <!-- Always visible, shows 0 when there are no guest meals -->
+                        <div class="today-card-guest" id="guestMealsItem">
+                            <svg class="today-card-guest-icon" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="9" cy="8" r="3"/>
+                                <path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>
+                                <circle cx="17.5" cy="8.5" r="2.3"/>
+                                <path d="M15.5 14.2c2.4.3 4 2 4 4.8"/>
+                            </svg>
+
+                            <div class="today-card-guest-text">
+                                <span class="today-card-guest-label">Guest Meals:</span>
+                                <span class="today-card-guest-value" id="guestMealsValue">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Meal on/off control, split out of the Today card above.
+                     A sliding switch whose knob position and color follow the 4 meal statuses. -->
+                <div class="meal-toggle-card" id="mealToggleCard">
+
+                    <!-- Column 1: title + hint stacked on the left, switch beside them -->
+                    <div class="meal-toggle-col meal-toggle-col-main">
+                        <div class="meal-toggle-card-text">
+                            <p class="meal-toggle-card-title">Toggle Meal</p>
+                            <p class="meal-toggle-card-hint" id="mealToggleHint" aria-live="polite">Tap the switch to turn your meal on or off.</p>
+                        </div>
+
+                        <button type="button" class="meal-toggle-pill" id="mealTogglePill" role="switch" aria-checked="false" disabled>
+                            <span class="meal-toggle-track"><span class="meal-toggle-knob"></span></span>
+                            <span class="meal-toggle-label" id="mealToggleLabel">...</span>
+                        </button>
+                    </div>
+
+                    <div class="meal-toggle-divider" aria-hidden="true"></div>
+
+                    <!-- Column 2: guest meal management -->
+                    <div class="meal-toggle-col meal-toggle-col-guest">
+                        <button type="button" class="guest-manage-button" id="guestManageButton">Manage<br>Guest Meals</button>
+                    </div>
+
+                </div>
+
+                <!-- Monthly summary -->
+                <h3 class="section-label">Monthly Summary</h3>
+
+                <div class="table-card" id="monthlySummaryCard">
+                    <!-- Summary table inserted by index.js -->
+                </div>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Calendar                                       -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="calendar" aria-labelledby="calendarHeading">
+                <h2 id="calendarHeading" class="section-heading">Calendar</h2>
+                <p class="section-subheading">Your meals, day by day.</p>
+
+                <div class="calendar-card">
+
+                    <div class="calendar-header">
+                        <button type="button" class="calendar-nav-button" id="calendarPrevButton" aria-label="Previous month">&lsaquo;</button>
+                        <span class="calendar-month-label" id="calendarMonthLabel"></span>
+                        <button type="button" class="calendar-nav-button" id="calendarNextButton" aria-label="Next month">&rsaquo;</button>
+                    </div>
+
+                    <div class="calendar-weekdays">
+                        <span class="calendar-weekday">Sun</span>
+                        <span class="calendar-weekday">Mon</span>
+                        <span class="calendar-weekday">Tue</span>
+                        <span class="calendar-weekday">Wed</span>
+                        <span class="calendar-weekday">Thu</span>
+                        <span class="calendar-weekday">Fri</span>
+                        <span class="calendar-weekday">Sat</span>
+                    </div>
+
+                    <div class="calendar-grid" id="calendarGrid" aria-live="polite">
+                        <!-- Day cells inserted by index.js -->
+                    </div>
+
+                </div>
+
+                <!-- Month summary. Same table as the Home tab's Monthly
+                     Summary, but it follows the calendar's month. -->
+                <h3 class="section-label">Monthly Summary</h3>
+
+                <div class="table-card" id="calendarSummaryCard">
+                    <!-- Summary table inserted by index.js -->
+                </div>
+
+                <!-- Transactions -->
+                <h3 class="section-label">Transactions</h3>
+
+                <div class="table-card" id="transactionsCard">
+                    <!-- Transactions table inserted by index.js -->
+                </div>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Options                                        -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="options" aria-labelledby="optionsHeading">
+                <h2 id="optionsHeading" class="section-heading">Options</h2>
+                <p class="section-subheading">Preferences and account controls.</p>
+
+                <div class="options-list">
+
+                    <div class="options-group">
+                        <div class="options-item">
+                            <span>Dark Mode</span>
+
+                            <label class="switch">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard links. index.js fills this group on every visit to
+                         the Options tab, and only with the dashboards this user
+                         may open (Meal Manager: GET /manager/period, Hall
+                         Representative: role "hr" from GET /auth/me). It stays
+                         hidden while neither applies. -->
+                    <div class="options-group" id="dashboardOptionsGroup" hidden></div>
+
+                    <div class="options-group">
+                        <!-- Adjust href once the See Roles page is wired up -->
+                        <a class="options-item" href="/roles.html">
+                            <span>See Roles</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <!-- Adjust href once the Profile Setting page is wired up -->
+                        <a class="options-item" href="/edit-profile.html">
+                            <span>Profile Setting</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <a class="options-item" href="/about.html">
+                            <span>About Meal Mate</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <button type="button" class="options-item danger" id="logoutButton">
+                            Logout
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+
+        <!-- ============================================= -->
+        <!-- Bottom tab navigation                          -->
+        <!-- ============================================= -->
+        <nav class="bottom-tabs" aria-label="Dashboard sections">
+
+            <button type="button" class="bottom-tab" data-tab="receipts">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2.5h12v19l-2.5-1.6L13 21.5l-2.5-1.6L8 21.5l-2-1.6z"/>
+                    <path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5"/>
+                </svg>
+                <span class="bottom-tab-label">Receipts</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="bulletin">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4.5h16v11H9.5L5 19v-3.5H4z"/>
+                    <path d="M7.5 8.5h9M7.5 11.5h6"/>
+                </svg>
+                <span class="bottom-tab-label">Bulletin</span>
+            </button>
+
+            <button type="button" class="bottom-tab active" data-tab="home">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 11.5 12 4l8 7.5"/>
+                    <path d="M6 10v9.5h12V10"/>
+                </svg>
+                <span class="bottom-tab-label">Home</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="calendar">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/>
+                    <path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/>
+                </svg>
+                <span class="bottom-tab-label">Calendar</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="options">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 2h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1c.6.5 1.3.9 2 1.2L10 22h4l.5-2.6c.7-.3 1.4-.7 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/>
+                </svg>
+                <span class="bottom-tab-label">Options</span>
+            </button>
+
+        </nav>
+
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- Guest Meal Management popup                    -->
+    <!-- ============================================= -->
+    <div class="modal-backdrop" id="guestModal" hidden>
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="guestModalTitle">
+
+            <button type="button" class="modal-close" id="guestModalClose" aria-label="Close">&times;</button>
+
+            <h3 class="modal-title" id="guestModalTitle">Guest Meal Management</h3>
+
+            <div class="guest-row">
+                <label class="guest-row-label" for="guestMealsInput">Add or Remove Guest meals</label>
+
+                <div class="guest-stepper">
+                    <button type="button" class="guest-step-button" id="guestMinusButton" aria-label="Remove one guest meal">&minus;</button>
+                    <input type="text" class="guest-input" id="guestMealsInput" inputmode="numeric" autocomplete="off" value="0" disabled>
+                    <button type="button" class="guest-step-button" id="guestPlusButton" aria-label="Add one guest meal">+</button>
+                </div>
+            </div>
+
+            <p class="guest-hint" id="guestHint" hidden></p>
+
+            <p class="guest-message" id="guestMessage" aria-live="polite"></p>
+
+            <button type="button" class="guest-save-button" id="guestSaveButton" disabled>Save</button>
+
+        </div>
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- Full transaction note popup                    -->
+    <!-- ============================================= -->
+    <div class="modal-backdrop" id="noteModal" hidden>
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="noteModalTitle">
+
+            <button type="button" class="modal-close" id="noteModalClose" aria-label="Close">&times;</button>
+
+            <h3 class="modal-title" id="noteModalTitle">Note</h3>
+
+            <p class="note-modal-text" id="noteModalText"></p>
+
+        </div>
+    </div>
+
+
+    <script src="shared/bulletin.js"></script>
+    <script src="shared/receipts.js"></script>
+    <script src="index.js"></script>
+
+</body>
+</html>

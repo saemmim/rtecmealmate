@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>User Approval</title>
+
+    <script src="shared/theme.js"></script>
+    <link rel="stylesheet" href="shared/theme.css">
+    <link rel="stylesheet" href="user-approval.css">
+</head>
+
+<body>
+
+    <main class="page">
+
+        <!-- Header -->
+        <header class="page-header">
+            <div>
+                <h1>User Approval</h1>
+                <p>Approve, reject or ban user accounts.</p>
+            </div>
+        </header>
+
+
+        <!-- Tabs -->
+        <nav class="tabs" aria-label="User status">
+
+            <button
+                type="button"
+                class="tab active"
+                data-tab="pending"
+            >
+                Pending
+                <span class="tab-count" id="pendingCount">0</span>
+            </button>
+
+            <button
+                type="button"
+                class="tab"
+                data-tab="approved"
+            >
+                Active
+                <span class="tab-count" id="approvedCount">0</span>
+            </button>
+
+            <button
+                type="button"
+                class="tab"
+                data-tab="banned"
+            >
+                Banned
+                <span class="tab-count" id="bannedCount">0</span>
+            </button>
+
+        </nav>
+
+
+        <!-- User list -->
+        <section
+            id="userList"
+            class="user-list"
+            aria-live="polite"
+        >
+            <!-- Users will be inserted here -->
+        </section>
+
+    </main>
+
+
+    <script src="user-approval.js"></script>
+
+</body>
+</html>

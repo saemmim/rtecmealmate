@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Account Pending - Meal Mate</title>
+
+    <script src="shared/theme.js"></script>
+    <link rel="stylesheet" href="shared/theme.css">
+    <link rel="stylesheet" href="pending.css">
+</head>
+
+<body>
+
+    <main class="pending-container">
+
+        <!-- ==========================
+             CARD 1 — Registration
+        =========================== -->
+
+        <section class="registration-card">
+
+            <div class="status-icon">
+                ✓
+            </div>
+
+            <h1>Registration Successful</h1>
+
+            <p>
+                Your account has been created successfully.
+            </p>
+
+        </section>
+
+
+        <!-- ==========================
+             CARD 2 — Profile
+        =========================== -->
+
+        <section class="profile-card">
+
+            <!-- Loading -->
+            <div
+                id="loadingMessage"
+                class="loading-message"
+            >
+                Loading your profile...
+            </div>
+
+
+            <!-- Profile Information -->
+            <div
+                id="profileInformation"
+                class="hidden"
+            >
+
+                <h2>Your Profile</h2>
+
+                <img
+                    id="profileImage"
+                    class="profile-image"
+                    src=""
+                    alt="Profile picture"
+                >
+
+                <div class="profile-info">
+
+                    <div class="profile-field">
+                        <span>Name</span>
+                        <strong id="profileName"></strong>
+                    </div>
+
+                    <div class="profile-field">
+                        <span>Username</span>
+                        <strong id="profileUsername"></strong>
+                    </div>
+
+                    <div class="profile-field">
+                        <span>Department</span>
+                        <strong id="profileDepartment"></strong>
+                    </div>
+
+                    <div class="profile-field">
+                        <span>Batch</span>
+                        <strong id="profileBatch"></strong>
+                    </div>
+
+                    <div class="profile-field">
+                        <span>Phone</span>
+                        <strong id="profilePhone"></strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Profile Picture Upload -->
+            <div
+                id="profileUpload"
+                class="hidden"
+            >
+
+                <h2>Set Your Profile Picture</h2>
+
+                <p class="section-description">
+                    Add a profile picture to complete your profile.
+                </p>
+
+
+                <div
+                    id="profilePictureWrapper"
+                    class="profile-picture-wrapper"
+                >
+
+                    <img
+                        id="profilePreview"
+                        src=""
+                        alt="Profile picture preview"
+                    >
+
+                    <div
+                        id="profilePlaceholder"
+                        class="profile-placeholder"
+                    >
+                        +
+                    </div>
+
+                </div>
+
+
+                <input
+                    type="file"
+                    id="profilePicture"
+                    accept="image/*"
+                    hidden
+                >
+
+
+                <button
+                    type="button"
+                    id="choosePictureButton"
+                    class="secondary-button"
+                >
+                    Choose Picture
+                </button>
+
+
+                <button
+                    type="button"
+                    id="savePictureButton"
+                    class="primary-button"
+                    disabled
+                >
+                    Save Profile Picture
+                </button>
+
+
+                <p
+                    id="uploadMessage"
+                    class="upload-message"
+                ></p>
+
+            </div>
+
+
+            <!-- Error -->
+            <p
+                id="errorMessage"
+                class="error-message hidden"
+            ></p>
+
+        </section>
+
+
+        <!-- ==========================
+             CARD 3 — Approval
+        =========================== -->
+
+        <section class="approval-card">
+
+            <div class="approval-icon">
+                ⏳
+            </div>
+
+            <h2>Waiting for Approval</h2>
+
+            <p>
+                Please contact your
+                <strong>Hostel Super</strong>
+                and ask them to approve your account.
+            </p>
+
+            <p class="muted">
+                You will be able to access Meal Mate
+                after your account has been approved.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <script src="pending.js"></script>
+
+</body>
+
+</html>

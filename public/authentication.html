@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Meal Mate - Authentication</title>
+
+    <script src="./shared/theme.js"></script>
+    <link rel="stylesheet" href="./shared/theme.css">
+    <link rel="stylesheet" href="./authentication.css">
+</head>
+
+<body>
+
+    <main class="auth-container">
+
+        <!-- Logo / Brand -->
+        <div class="brand">
+            <div class="brand-icon">🍽️</div>
+            <h1>Meal Mate</h1>
+            <p>Manage your meals easily</p>
+        </div>
+
+
+        <!-- Auth Card -->
+        <div class="auth-card">
+
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button id="loginTab" class="tab active">
+                    Login
+                </button>
+
+                <button id="signupTab" class="tab">
+                    Sign Up
+                </button>
+            </div>
+
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+
+                <h2>Welcome back</h2>
+                <p class="form-subtitle">
+                    Login to manage your meals
+                </p>
+
+                <div class="form-group">
+                    <label for="loginEmail">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        name="email"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="loginPassword">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        name="password"
+                        placeholder="Enter your password"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-options">
+                    <label class="remember">
+                        <input type="checkbox" id="rememberMe">
+                        Remember me
+                    </label>
+
+                    <a href="#" id="forgotPassword">
+                        Forgot password?
+                    </a>
+                </div>
+
+
+                <button type="submit" class="submit-btn">
+                    Login
+                </button>
+
+            </form>
+
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form hidden">
+
+                <h2>Create an account</h2>
+                <p class="form-subtitle">
+                    Sign up to start managing your meals
+                </p>
+
+                <div class="form-group">
+                    <label for="signupName">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="signupName"
+                        name="name"
+                        placeholder="Enter your full name"
+                        pattern="[A-Za-z .]{3,}"
+                        title="Minimum 3 characters. Only letters, spaces, and dots are allowed"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="signupUsername">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        id="signupUsername"
+                        name="username"
+                        placeholder="Enter an username"
+                        pattern="[a-z0-9.]{3,}"
+                        title="Minimum 3 characters. Only small letters, numbers, and dots are allowed"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="signupBatch">
+                        Batch
+                    </label>
+
+                    <select
+                        id="signupBatch"
+                        name="batch"
+                        required
+                    >
+                        <option value="" disabled selected>Select your batch</option>
+                        <option value="1st">1st</option>
+                        <option value="2nd">2nd</option>
+                        <option value="3rd">3rd</option>
+                        <option value="4th">4th</option>
+                        <option value="5th">5th</option>
+                        <option value="6th">6th</option>
+                        <option value="7th">7th</option>
+                        <option value="8th">8th</option>
+                        <option value="9th">9th</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="signupDepartment">
+                        Department
+                    </label>
+
+                    <select
+                        id="signupDepartment"
+                        name="department"
+                        required
+                    >
+                        <option value="" disabled selected>Select your department</option>
+                        <option value="YE">Yarn Engineering</option>
+                        <option value="FE">Fabric Engineering</option>
+                        <option value="AE">Apparel Engineering</option>
+                        <option value="WPE">Wet Process Engineering</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="signupEmail">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="signupEmail"
+                        name="email"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="signupPhone">
+                        Phone
+                    </label>
+
+
+                    <div class="phone-input">
+                        <span class="country-code">+88</span>
+                        <input
+                            type="tel"
+                            id="signupPhone"
+                            name="phone"
+                            placeholder="01XXXXXXXXX"
+                            maxlength="11"
+                            pattern="01[0-9]{9}"
+                            inputmode="numeric"
+                            required
+                        >
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="signupPassword">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        name="password"
+                        placeholder="Create a password"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="confirmPassword">
+                        Confirm Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        placeholder="Confirm your password"
+                        required
+                    >
+                </div>
+
+
+                <button type="submit" class="submit-btn">
+                    Create Account
+                </button>
+
+            </form>
+
+
+            <!-- Message -->
+            <p id="authMessage" class="auth-message"></p>
+
+        </div>
+
+
+        <p class="footer-text">
+            © 2026 Meal Mate
+        </p>
+    </main>
+
+
+    <script src="./authentication.js"></script>
+
+</body>
+</html>

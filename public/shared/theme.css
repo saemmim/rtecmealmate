@@ -1,0 +1,137 @@
+/*
+|==========================================================================
+| Shared theme variables
+|
+| Single source of truth for light/dark colors. Link this before the
+| page's own stylesheet. The theme class is set by shared/theme.js on
+| <html> (html.dark-mode / html.light-mode). body.dark-mode / body.light-mode
+| are also matched so pages that still set the class on <body> keep working.
+|
+| Priority: saved choice (class) > OS preference (media query below).
+|==========================================================================
+*/
+
+:root {
+    color-scheme: light dark;
+
+    --bg-color: #f5f7f6;
+    --surface-color: #ffffff;
+    --text-color: #222222;
+    --muted-text: #777777;
+    --muted-text-strong: #888888;
+    --border-color: #dddddd;
+    --input-border: #cccccc;
+    --input-bg: #ffffff;
+    --button-bg: #222222;
+    --button-text: #ffffff;
+    --link-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+
+    --danger-color: #b42318;
+    --success-color: #18794e;
+
+    --tab-active-bg: #222222;
+    --tab-active-text: #ffffff;
+
+    --mm-accent: #b45309;
+    --hr-accent: #1d4ed8;
+    --hs-accent: #7e22ce;
+    --info-color: #1d4ed8;
+    --warning-color: #a16207;
+    --purple-color: #7e22ce;
+}
+
+/* OS preference (also the no-JS fallback) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #101716;
+        --surface-color: #1a2523;
+        --text-color: #edf4f2;
+        --muted-text: #a8b5b2;
+        --muted-text-strong: #9aa8a5;
+        --border-color: #2f3d3a;
+        --input-border: #415b57;
+        --input-bg: #121d1c;
+        --button-bg: #e5f1ee;
+        --button-text: #101716;
+        --link-color: #edf4f2;
+        --shadow-color: rgba(0, 0, 0, 0.35);
+
+        --danger-color: #f28b82;
+        --success-color: #75d5a8;
+
+        --tab-active-bg: #e5f1ee;
+        --tab-active-text: #101716;
+
+        --mm-accent: #f6ad55;
+        --hr-accent: #7aa2f7;
+        --hs-accent: #c58af9;
+        --info-color: #7aa2f7;
+        --warning-color: #facc15;
+        --purple-color: #c084fc;
+    }
+}
+
+/* Explicit dark (saved choice or OS, applied by theme.js) */
+html.dark-mode,
+body.dark-mode {
+    color-scheme: dark;
+
+    --bg-color: #101716;
+    --surface-color: #1a2523;
+    --text-color: #edf4f2;
+    --muted-text: #a8b5b2;
+    --muted-text-strong: #9aa8a5;
+    --border-color: #2f3d3a;
+    --input-border: #415b57;
+    --input-bg: #121d1c;
+    --button-bg: #e5f1ee;
+    --button-text: #101716;
+    --link-color: #edf4f2;
+    --shadow-color: rgba(0, 0, 0, 0.35);
+
+    --danger-color: #f28b82;
+    --success-color: #75d5a8;
+
+    --tab-active-bg: #e5f1ee;
+    --tab-active-text: #101716;
+
+    --mm-accent: #f6ad55;
+    --hr-accent: #7aa2f7;
+    --hs-accent: #c58af9;
+    --info-color: #7aa2f7;
+    --warning-color: #facc15;
+    --purple-color: #c084fc;
+}
+
+/* Explicit light, overrides an OS dark preference */
+html.light-mode,
+body.light-mode {
+    color-scheme: light;
+
+    --bg-color: #f5f7f6;
+    --surface-color: #ffffff;
+    --text-color: #222222;
+    --muted-text: #777777;
+    --muted-text-strong: #888888;
+    --border-color: #dddddd;
+    --input-border: #cccccc;
+    --input-bg: #ffffff;
+    --button-bg: #222222;
+    --button-text: #ffffff;
+    --link-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+
+    --danger-color: #b42318;
+    --success-color: #18794e;
+
+    --tab-active-bg: #222222;
+    --tab-active-text: #ffffff;
+
+    --mm-accent: #b45309;
+    --hr-accent: #1d4ed8;
+    --hs-accent: #7e22ce;
+    --info-color: #1d4ed8;
+    --warning-color: #a16207;
+    --purple-color: #7e22ce;
+}

@@ -1,0 +1,1541 @@
+/*
+|==========================================================================
+| Theme
+|
+| This variable set is the single source of truth for the dashboard
+| theme. shared/bulletin.css and shared/receipts.css rely on these same
+| variable NAMES being defined by whichever dashboard stylesheet loads
+| them — keep this block identical across index.css, manager.css,
+| representative.css and administrator.css.
+|==========================================================================
+*/
+
+:root {
+    --bg-color: #f5f7f6;
+    --surface-color: #ffffff;
+    --text-color: #222222;
+    --muted-text: #777777;
+    --muted-text-strong: #888888;
+    --border-color: #dddddd;
+    --input-border: #cccccc;
+    --input-bg: #ffffff;
+    --button-bg: #222222;
+    --button-text: #ffffff;
+    --link-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+
+    --danger-color: #b42318;
+    --success-color: #18794e;
+
+    --tab-active-bg: #222222;
+    --tab-active-text: #ffffff;
+
+    /* Role accent colors, used by bulletin badges & role-history rows */
+    --mm-accent: #b45309;
+    --hr-accent: #1d4ed8;
+    --hs-accent: #7e22ce;
+    --info-color: #1d4ed8;
+    --warning-color: #a16207;
+    --purple-color: #7e22ce;
+}
+
+body.dark-mode {
+    --bg-color: #101716;
+    --surface-color: #1a2523;
+    --text-color: #edf4f2;
+    --muted-text: #a8b5b2;
+    --muted-text-strong: #9aa8a5;
+    --border-color: #2f3d3a;
+    --input-border: #415b57;
+    --input-bg: #121d1c;
+    --button-bg: #e5f1ee;
+    --button-text: #101716;
+    --link-color: #edf4f2;
+    --shadow-color: rgba(0, 0, 0, 0.35);
+
+    --danger-color: #f28b82;
+    --success-color: #75d5a8;
+
+    --tab-active-bg: #e5f1ee;
+    --tab-active-text: #101716;
+
+    --mm-accent: #f6ad55;
+    --hr-accent: #7aa2f7;
+    --hs-accent: #c58af9;
+    --info-color: #7aa2f7;
+    --warning-color: #facc15;
+    --purple-color: #c084fc;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #101716;
+        --surface-color: #1a2523;
+        --text-color: #edf4f2;
+        --muted-text: #a8b5b2;
+        --muted-text-strong: #9aa8a5;
+        --border-color: #2f3d3a;
+        --input-border: #415b57;
+        --input-bg: #121d1c;
+        --button-bg: #e5f1ee;
+        --button-text: #101716;
+        --link-color: #edf4f2;
+        --shadow-color: rgba(0, 0, 0, 0.35);
+
+        --danger-color: #f28b82;
+        --success-color: #75d5a8;
+
+        --tab-active-bg: #e5f1ee;
+        --tab-active-text: #101716;
+
+        --mm-accent: #f6ad55;
+        --hr-accent: #7aa2f7;
+        --hs-accent: #c58af9;
+        --info-color: #7aa2f7;
+        --warning-color: #facc15;
+        --purple-color: #c084fc;
+    }
+}
+
+/* body.dark-mode is applied by index.js (see Options > Dark Mode)
+   and always wins over the OS-level prefers-color-scheme guess. Toggling
+   it off explicitly (light mode override) is handled the same way manager.css /
+   representative.css / index.css should do it, via a "light-mode" class —
+   see index.js applyTheme(). */
+body.light-mode {
+    --bg-color: #f5f7f6;
+    --surface-color: #ffffff;
+    --text-color: #222222;
+    --muted-text: #777777;
+    --muted-text-strong: #888888;
+    --border-color: #dddddd;
+    --input-border: #cccccc;
+    --input-bg: #ffffff;
+    --button-bg: #222222;
+    --button-text: #ffffff;
+    --link-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+
+    --danger-color: #b42318;
+    --success-color: #18794e;
+
+    --tab-active-bg: #222222;
+    --tab-active-text: #ffffff;
+
+    --mm-accent: #b45309;
+    --hr-accent: #1d4ed8;
+    --hs-accent: #7e22ce;
+    --info-color: #1d4ed8;
+    --warning-color: #a16207;
+    --purple-color: #7e22ce;
+}
+
+
+/* =========================================
+   Base
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;    
+
+    background: var(--bg-color);
+    color: var(--text-color);
+
+    font-family: Arial, sans-serif;
+
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease;
+}
+
+button {
+    font: inherit;
+}
+
+a {
+    color: var(--link-color);
+}
+
+
+/* =========================================
+   Dashboard shell
+========================================= */
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+
+    max-width: 460px;
+    margin: 0px auto;
+    min-height: 100vh;
+}
+
+.dashboard-content {
+    flex: 1;
+    width: 100%;
+
+    max-width: 430px;
+    margin: 0 auto;
+
+    padding: 28px 16px calc(96px + env(safe-area-inset-bottom));
+}
+
+.dashboard-section {
+    display: none;
+
+    animation: sectionAppear 0.2s ease both;
+}
+
+.dashboard-section.active {
+    display: block;
+}
+
+@keyframes sectionAppear {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-heading {
+    margin: 0 10px 4px;
+
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.4px;
+}
+
+.section-subheading {
+    margin: 0 10px 20px;
+
+    color: var(--muted-text);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   Bottom tab bar
+========================================= */
+
+.bottom-tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: 430px;
+    margin: 0px auto;
+    z-index: 50;
+
+    display: flex;
+
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+
+    background: var(--surface-color);
+    border-top: 1px solid var(--border-color);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -3px 14px var(--shadow-color);
+}
+
+.bottom-tab {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    position: relative;
+
+    padding: 7px 2px;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: transparent;
+    color: var(--muted-text);
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.bottom-tab:hover {
+    color: var(--text-color);
+}
+
+.bottom-tab.active {
+    background: var(--tab-active-bg);
+    color: var(--tab-active-text);
+}
+
+.bottom-tab svg {
+    width: 20px;
+    height: 20px;
+
+    stroke: currentColor;
+    fill: none;
+}
+
+.bottom-tab-label {
+    font-size: 10.5px;
+    font-weight: 600;
+}
+
+.bottom-tab-badge {
+    position: absolute;
+    top: 2px;
+    right: 16%;
+
+    min-width: 15px;
+    height: 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 4px;
+
+    border-radius: 999px;
+    border: 1.5px solid var(--surface-color);
+
+    background: var(--danger-color);
+    color: #ffffff;
+
+    font-size: 9.5px;
+    font-weight: 700;
+
+    line-height: 1;
+}
+
+.bottom-tab.active .bottom-tab-badge {
+    border-color: var(--tab-active-bg);
+}
+
+/* =========================================
+   Loading / empty / error states
+========================================= */
+
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 50px 20px;
+
+    color: var(--muted-text);
+
+    font-size: 13px;
+}
+
+.loading-dots {
+    display: flex;
+
+    gap: 4px;
+}
+
+.loading-dots span {
+    width: 5px;
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+
+    animation: loadingDot 1.2s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.loading-dots span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes loadingDot {
+    0%,
+    60%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+
+    30% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+.state-box {
+    padding: 48px 24px;
+
+    text-align: center;
+
+    background: var(--surface-color);
+
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+.state-title {
+    margin: 0 0 7px;
+
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.state-message {
+    margin: 0;
+
+    color: var(--muted-text);
+
+    font-size: 13px;
+}
+
+.retry-button {
+    margin-top: 18px;
+
+    padding: 9px 15px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    cursor: pointer;
+
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.retry-button:hover {
+    opacity: 0.85;
+}
+
+.action-error {
+    animation: actionError 0.35s ease;
+}
+
+@keyframes actionError {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+}
+
+
+
+/* =========================================
+   Options list
+========================================= */
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.options-group[hidden] {
+    display: none;
+}
+
+.options-group {
+    background: var(--surface-color);
+
+    border-radius: 14px;
+
+    box-shadow: 0 3px 12px var(--shadow-color);
+
+    overflow: hidden;
+}
+
+.options-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 15px 18px;
+
+    border-bottom: 1px solid var(--border-color);
+
+    font-size: 14px;
+    font-weight: 550;
+}
+
+.options-item:last-child {
+    border-bottom: 0;
+}
+
+a.options-item {
+    color: var(--text-color);
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition: background-color 0.15s ease;
+}
+
+a.options-item:hover {
+    background: var(--bg-color);
+}
+
+.options-chevron {
+    color: var(--muted-text-strong);
+    font-size: 16px;
+}
+
+button.options-item {
+    width: 100%;
+
+    border: 0;
+    background: transparent;
+
+    text-align: left;
+    cursor: pointer;
+
+    color: var(--text-color);
+}
+
+button.options-item:hover {
+    background: var(--bg-color);
+}
+
+.options-item.danger {
+    color: var(--danger-color);
+}
+
+/* Dark mode toggle switch */
+
+.switch {
+    position: relative;
+
+    width: 42px;
+    height: 25px;
+
+    flex-shrink: 0;
+}
+
+.switch input {
+    position: absolute;
+
+    opacity: 0;
+
+    width: 0;
+    height: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    inset: 0;
+
+    background: var(--border-color);
+
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease;
+}
+
+.switch-slider::before {
+    content: "";
+
+    position: absolute;
+    top: 3px;
+    left: 3px;
+
+    width: 19px;
+    height: 19px;
+
+    border-radius: 50%;
+
+    background: var(--surface-color);
+
+    box-shadow: 0 1px 3px var(--shadow-color);
+
+    transition: transform 0.2s ease;
+}
+
+.switch input:checked + .switch-slider {
+    background: var(--text-color);
+}
+
+.switch input:checked + .switch-slider::before {
+    transform: translateX(17px);
+}
+
+
+/* =========================================
+   Home — Today card
+   Two columns split by a divider. The date
+   sits on the left; the right column stacks
+   the read-only meal status on top and guest
+   meals at the bottom.
+========================================= */
+
+.today-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 20px;
+
+    padding: 24px 22px;
+
+    background: var(--surface-color);
+
+    border-radius: 20px;
+
+    box-shadow: 0 6px 20px var(--shadow-color);
+}
+
+.today-card-date,
+.today-card-status {
+    flex: 1;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.today-card-date {
+    justify-content: center;
+}
+
+/* Pushes guest meals to the bottom of the right column, under the
+   status line, whatever the date column's height ends up being. */
+.today-card-status {
+    justify-content: space-between;
+
+    gap: 18px;
+}
+
+.today-card-divider {
+    width: 1px;
+
+    background: var(--border-color);
+}
+
+
+.today-card-date-value {
+    margin: 0;
+
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+}
+
+/* Meal status line — same shape as the guest meals line, so the two
+   read as a single stacked list. */
+.today-card-status-row {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.today-card-status-icon {
+    width: 26px;
+    height: 26px;
+
+    flex-shrink: 0;
+
+    stroke: var(--muted-text-strong);
+    fill: none;
+}
+
+.today-card-status-text {
+    display: flex;
+    flex-direction: column;
+
+    gap: 1px;
+}
+
+.today-card-status-label {
+    color: var(--muted-text);
+
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.today-card-status-value {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.today-card-status-row.is-on .today-card-status-value,
+.today-card-status-row.is-on .today-card-status-icon {
+    color: var(--success-color);
+    stroke: var(--success-color);
+}
+
+.today-card-status-row.is-off .today-card-status-value,
+.today-card-status-row.is-off .today-card-status-icon {
+    color: var(--danger-color);
+    stroke: var(--danger-color);
+}
+
+.today-card-guest {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.today-card-guest-icon {
+    width: 26px;
+    height: 26px;
+
+    flex-shrink: 0;
+
+    stroke: var(--info-color);
+    fill: none;
+}
+
+.today-card-guest-text {
+    display: flex;
+    flex-direction: column;
+
+    gap: 1px;
+}
+
+.today-card-guest-label {
+    color: var(--muted-text);
+
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.today-card-guest-value {
+    color: var(--info-color);
+
+    font-size: 18px;
+    font-weight: 800;
+}
+
+
+/* =========================================
+   Home — Meal toggle card
+   The on/off control, split out of the Today
+   card above and given its own row.
+========================================= */
+
+.meal-toggle-card {
+    display: flex;
+    align-items: stretch;
+
+    gap: 16px;
+
+    margin-top: 14px;
+
+    padding: 18px 20px;
+
+    background: var(--surface-color);
+
+    border-radius: 20px;
+
+    box-shadow: 0 6px 20px var(--shadow-color);
+}
+
+/* Column 1 (switch) takes the room, column 2 (guest meals) hugs its button */
+.meal-toggle-col {
+    flex: 1 1 0;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* Column 1 lays its children out in a row: text block, then the switch */
+.meal-toggle-col-main {
+    flex-direction: row;
+    align-items: center;
+
+    gap: 12px;
+}
+
+.meal-toggle-card-text {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.meal-toggle-col-guest {
+    flex: 0 0 auto;
+
+    align-items: center;
+}
+
+.meal-toggle-divider {
+    flex-shrink: 0;
+
+    width: 1px;
+
+    background: var(--border-color);
+}
+
+.meal-toggle-card-title {
+    margin: 0 0 4px;
+
+    font-size: 14.5px;
+    font-weight: 700;
+}
+
+.meal-toggle-card-hint {
+    margin: 0;
+
+    color: var(--muted-text);
+
+    font-size: 11.5px;
+    line-height: 1.4;
+}
+
+.meal-toggle-card-hint.is-error {
+    color: var(--danger-color);
+}
+
+.guest-manage-button {
+    padding: 12px 16px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+
+    cursor: pointer;
+
+    transition: opacity 0.2s ease;
+}
+
+.guest-manage-button:hover {
+    opacity: 0.85;
+}
+
+
+/* =========================================
+   Home — Meal On/Off toggle switch
+   A sliding switch. The knob position and the
+   color both follow the meal status:
+
+     off              -> red,    knob left
+     offFromTomorrow  -> purple, knob left   (on today, off from tomorrow)
+     onFromTomorrow   -> yellow, knob right  (off today, on from tomorrow)
+     on               -> green,  knob right
+
+   While a request is in flight the switch is
+   neutral and the knob slides toward the
+   requested side. A failed request slides it
+   back and shakes it (.action-error).
+========================================= */
+
+.meal-toggle-pill {
+    --toggle-color: var(--muted-text);
+    --knob-pos: 0.5;
+
+    flex-shrink: 0;
+
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 6px;
+
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    background: none;
+
+    color: var(--toggle-color);
+
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+
+    cursor: pointer;
+
+    -webkit-tap-highlight-color: transparent;
+
+    transition: color 0.35s ease;
+}
+
+.meal-toggle-track {
+    position: relative;
+    box-sizing: border-box;
+
+    width: 64px;
+    height: 32px;
+
+    flex-shrink: 0;
+
+    border: 1.5px solid var(--toggle-color);
+    border-radius: 999px;
+
+    background: color-mix(in srgb, var(--toggle-color) 16%, transparent);
+
+    transition:
+        border-color 0.35s ease,
+        background-color 0.35s ease;
+}
+
+.meal-toggle-knob {
+    position: absolute;
+
+    top: 50%;
+
+    /* 3px gap on each side: at pos 0 the knob is 3px from the left edge,
+       at pos 1 it is 3px from the right edge, whatever the track width. */
+    left: calc(3px + var(--knob-pos) * (100% - 28px));
+
+    width: 22px;
+    height: 22px;
+
+    margin-top: -11px;
+
+    border-radius: 50%;
+
+    background: var(--toggle-color);
+
+    transition:
+        left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        background-color 0.35s ease;
+}
+
+.meal-toggle-pill:focus-visible .meal-toggle-track {
+    outline: 2px solid var(--toggle-color);
+    outline-offset: 3px;
+}
+
+/* Long labels ("ON TOMORROW") wrap onto two lines instead of widening the switch */
+.meal-toggle-label {
+    max-width: 78px;
+
+    font-size: 11.5px;
+    line-height: 1.2;
+    text-align: center;
+}
+
+/* Waiting on the server — neutral, not clickable, gently pulsing. The
+   knob sits in the middle until a request says where it is heading. */
+.meal-toggle-pill:disabled {
+    cursor: default;
+}
+
+.meal-toggle-pill.is-pending .meal-toggle-track {
+    animation: mealTogglePulse 1s ease-in-out infinite;
+}
+
+.meal-toggle-pill.requesting-on  { --knob-pos: 1; }
+.meal-toggle-pill.requesting-off { --knob-pos: 0; }
+
+@keyframes mealTogglePulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+}
+
+.meal-toggle-pill.status-on {
+    --toggle-color: var(--success-color);
+    --knob-pos: 1;
+}
+
+/* Meal is off today, turns on tomorrow: knob shows the new (on) state */
+.meal-toggle-pill.status-onFromTomorrow {
+    --toggle-color: var(--warning-color);
+    --knob-pos: 1;
+}
+
+/* Meal is on today, turns off tomorrow: knob shows the new (off) state */
+.meal-toggle-pill.status-offFromTomorrow {
+    --toggle-color: var(--purple-color);
+    --knob-pos: 0;
+}
+
+.meal-toggle-pill.status-off {
+    --toggle-color: var(--danger-color);
+    --knob-pos: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .meal-toggle-knob,
+    .meal-toggle-track,
+    .meal-toggle-pill {
+        transition-duration: 0.01ms;
+    }
+
+    .meal-toggle-pill.is-pending .meal-toggle-track {
+        animation: none;
+    }
+}
+
+
+/* =========================================
+   Guest Meal Management popup
+========================================= */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop[hidden] {
+    display: none;
+}
+
+.modal-box {
+    position: relative;
+    box-sizing: border-box;
+
+    width: 100%;
+    max-width: 380px;
+
+    padding: 24px 20px 20px;
+
+    background: var(--surface-color);
+    color: var(--text-color);
+
+    border-radius: 20px;
+
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+
+    animation: sectionAppear 0.2s ease;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+
+    width: 32px;
+    height: 32px;
+
+    border: 0;
+    background: none;
+    color: var(--muted-text);
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.modal-title {
+    margin: 0 28px 18px 0;
+
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* Full note popup (Calendar tab > Transactions) */
+.note-modal-text {
+    margin: 0;
+
+    max-height: 60vh;
+    overflow-y: auto;
+
+    font-size: 14px;
+    line-height: 1.55;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.guest-hint {
+    margin: 10px 0 0;
+
+    color: var(--muted-text);
+
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.guest-hint[hidden] {
+    display: none;
+}
+
+.guest-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+.guest-row-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.guest-stepper {
+    display: flex;
+    align-items: center;
+
+    flex-shrink: 0;
+
+    gap: 6px;
+}
+
+.guest-step-button {
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    border: 1px solid var(--input-border);
+    border-radius: 10px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    font: inherit;
+    font-size: 18px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.guest-step-button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.guest-input {
+    box-sizing: border-box;
+
+    width: 48px;
+    height: 34px;
+
+    padding: 0 4px;
+
+    border: 1px solid var(--input-border);
+    border-radius: 10px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.guest-input:disabled {
+    opacity: 0.6;
+}
+
+/* Sits right above the Save button; keeps its height so the box doesn't
+   jump when a message appears. */
+.guest-message {
+    min-height: 18px;
+
+    margin: 16px 0 8px;
+
+    color: var(--muted-text);
+
+    font-size: 12.5px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.guest-message.is-error {
+    color: var(--danger-color);
+}
+
+.guest-message.is-success {
+    color: var(--success-color);
+}
+
+.guest-save-button {
+    display: block;
+
+    width: 100%;
+
+    padding: 12px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: opacity 0.2s ease;
+}
+
+.guest-save-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+
+/* =========================================
+   Home — Monthly summary (key / value table)
+========================================= */
+
+.section-label {
+    margin: 22px 0 10px;
+
+    font-size: 13px;
+    font-weight: 650;
+
+    color: var(--muted-text);
+}
+
+.table-card {
+    padding: 4px 16px;
+
+    background: var(--surface-color);
+
+    border-radius: 14px;
+
+    box-shadow: 0 3px 12px var(--shadow-color);
+}
+
+.summary-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 13.5px;
+}
+
+.summary-table td {
+    padding: 11px 2px;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.summary-table td:first-child {
+    color: var(--muted-text);
+}
+
+.summary-table td.numeric {
+    text-align: right;
+
+    font-weight: 650;
+
+    white-space: nowrap;
+}
+
+/* A real, settled rate reads as normal text; only the fallback
+   "expected" rate is flagged red. */
+.summary-table td.numeric.rate-actual {
+    color: var(--text-color);
+}
+
+.summary-table td.numeric.rate-expected {
+    color: var(--danger-color);
+}
+
+.summary-table td.numeric.negative {
+    color: var(--danger-color);
+}
+
+.summary-table tr.total-row td {
+    font-weight: 700;
+}
+
+
+/* =========================================
+   Calendar card
+========================================= */
+
+.calendar-card {
+    padding: 16px 14px 18px;
+
+    background: var(--surface-color);
+
+    border-radius: 16px;
+
+    box-shadow: 0 3px 12px var(--shadow-color);
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+}
+
+.calendar-nav-button {
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    background: var(--surface-color);
+    color: var(--text-color);
+
+    font-size: 18px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.calendar-nav-button:hover:not(:disabled) {
+    background: var(--bg-color);
+}
+
+/* Already on the current month — there is nothing after it. */
+.calendar-nav-button:disabled {
+    cursor: default;
+
+    opacity: 0.4;
+}
+
+.calendar-month-label {
+    font-size: 15px;
+    font-weight: 650;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+
+    gap: 4px;
+}
+
+.calendar-weekdays {
+    margin-bottom: 6px;
+}
+
+.calendar-weekday {
+    text-align: center;
+
+    color: var(--muted-text);
+
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+
+    border-radius: 10px;
+
+    background: var(--bg-color);
+}
+
+.calendar-day.empty {
+    background: transparent;
+}
+
+.calendar-day.today {
+    border: 1.5px solid var(--text-color);
+}
+
+.calendar-day-number {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Meals under the date, matching the per-user calendar in the Meal
+   Manager: nothing at all for 0, a green tick for exactly 1, the count
+   in the danger color for more. */
+.calendar-day-mark {
+    font-size: 13px;
+    font-weight: 700;
+
+    line-height: 1;
+}
+
+.calendar-day-mark.ok {
+    color: var(--success-color);
+}
+
+.calendar-day-mark.over {
+    color: var(--danger-color);
+}
+
+
+/* =========================================
+   Transactions table
+========================================= */
+
+.transactions-card-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 12.5px;
+}
+
+.transactions-card-table th,
+.transactions-card-table td {
+    padding: 9px 4px;
+
+    text-align: left;
+    vertical-align: middle;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.transactions-card-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.transactions-card-table th {
+    color: var(--muted-text);
+
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.transactions-card-table td.numeric,
+.transactions-card-table th.numeric {
+    text-align: right;
+}
+
+.transactions-card-table td:last-child {
+    overflow-wrap: anywhere;
+}
+
+/* "Jan 26" never needs to wrap */
+.transactions-card-table td:first-child {
+    white-space: nowrap;
+}
+
+/* A note longer than 10 characters is cut short and opens in a popup */
+.note-link {
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    background: none;
+    color: var(--info-color);
+
+    font: inherit;
+    text-align: left;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+
+    cursor: pointer;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+
+/* =========================================
+   Mobile
+========================================= */
+
+@media (max-width: 480px) {
+
+    .dashboard-content {
+        padding: 14px 12px calc(90px + env(safe-area-inset-bottom));
+    }
+
+    .today-card {
+        padding: 20px 16px;
+
+        gap: 14px;
+    }
+
+    .today-card-date-value {
+        font-size: 23px;
+    }
+
+    .meal-toggle-pill {
+        gap: 5px;
+    }
+
+    .meal-toggle-label {
+        max-width: 66px;
+
+        font-size: 10.5px;
+    }
+
+    .meal-toggle-track {
+        width: 56px;
+    }
+
+    .guest-manage-button {
+        padding: 10px 12px;
+
+        font-size: 12px;
+    }
+
+    .meal-toggle-card {
+        padding: 16px;
+
+        gap: 12px;
+    }
+}

@@ -1,0 +1,437 @@
+/*
+|==========================================================================
+| shared/bulletin.css
+|
+| Depends on the theme CSS variables (--bg-color, --surface-color, etc.)
+| already defined by the dashboard page that loads this file
+| (administrator.css / manager.css / representative.css / index.css).
+| This file only adds bulletin-specific styling, namespaced with a
+| "bulletin-" prefix so it never collides with dashboard-level classes.
+|==========================================================================
+*/
+
+
+/* =========================================
+   Toolbar (Add button)
+========================================= */
+
+.bulletin-toolbar {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-bottom: 14px;
+}
+
+.bulletin-add-button {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 9px 16px;
+
+    border: 0;
+    border-radius: 9px;
+
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.bulletin-add-button:hover {
+    opacity: 0.9;
+}
+
+.bulletin-add-button:active {
+    transform: translateY(1px);
+}
+
+.bulletin-add-button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+
+/* =========================================
+   Bulletin list / card
+========================================= */
+
+.bulletin-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.bulletin-card {
+    padding: 16px 18px;
+
+    background: var(--surface-color);
+
+    border-left: 1px solid var(--muted-text-strong);
+    border-radius: 12px;
+
+    box-shadow: 0 3px 12px var(--shadow-color);
+
+    animation: bulletinAppear 0.25s ease both;
+}
+
+@keyframes bulletinAppear {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.bulletin-card.role-mm { border-left-color: var(--mm-accent); }
+.bulletin-card.role-hr { border-left-color: var(--hr-accent); }
+.bulletin-card.role-hs { border-left-color: var(--hs-accent); }
+
+/* Header */
+
+.bulletin-header {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 12px;
+}
+
+.bulletin-avatar {
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+    object-fit: cover;
+
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+}
+
+.bulletin-identity {
+    min-width: 0;
+    flex: 1;
+}
+
+.bulletin-name-row {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.bulletin-name {
+    margin: 0;
+
+    font-size: 14px;
+    font-weight: 650;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bulletin-role-badge {
+    flex-shrink: 0;
+
+    padding: 2px 8px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+
+    color: #ffffff;
+
+    background: var(--muted-text-strong);
+}
+
+.bulletin-role-badge.role-mm { background: var(--mm-accent); }
+.bulletin-role-badge.role-hr { background: var(--hr-accent); }
+.bulletin-role-badge.role-hs { background: var(--hs-accent); }
+
+.bulletin-meta-row {
+    margin: 2px 0 0;
+
+    color: var(--muted-text);
+    font-size: 12px;
+}
+
+/* Body */
+
+.bulletin-body {
+    margin-bottom: 10px;
+}
+
+.bulletin-heading {
+    margin: 0 0 5px;
+
+    font-size: 15px;
+    font-weight: 650;
+
+    line-height: 1.35;
+}
+
+.bulletin-message {
+    margin: 0;
+
+    color: var(--text-color);
+
+    font-size: 13.5px;
+    line-height: 1.55;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Footer */
+
+.bulletin-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding-top: 5px;
+
+    border-top: 1px solid var(--border-color);
+}
+
+.bulletin-date {
+    color: var(--muted-text);
+    font-size: 9.5px;
+}
+
+.bulletin-edited {
+    color: var(--muted-text-strong);
+    font-size: 10px;
+    font-style: italic;
+}
+
+.bulletin-edit-button {
+    border: 0;
+    background: transparent;
+
+    color: var(--link-color);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    padding: 2px 4px;
+}
+
+.bulletin-edit-button:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================
+   Add / Edit modal
+========================================= */
+
+.bulletin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    animation: bulletinOverlayFade 0.2s ease both;
+}
+
+@keyframes bulletinOverlayFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.bulletin-modal-box {
+    width: 100%;
+    max-width: 430px;
+    max-height: 88vh;
+
+    overflow-y: auto;
+
+    padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+
+    background: var(--surface-color);
+
+    border-radius: 18px 18px 0 0;
+
+    animation: bulletinModalSlideUp 0.25s ease both;
+}
+
+@media (min-width: 480px) {
+    .bulletin-modal-overlay { align-items: center; }
+    .bulletin-modal-box { border-radius: 18px; }
+}
+
+@keyframes bulletinModalSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.bulletin-modal-title {
+    margin: 0 0 16px;
+
+    font-size: 17px;
+    font-weight: 650;
+}
+
+.bulletin-form-field {
+    margin-bottom: 14px;
+}
+
+.bulletin-form-field label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 12.5px;
+    font-weight: 600;
+
+    color: var(--muted-text);
+}
+
+.bulletin-form-field input[type="text"],
+.bulletin-form-field textarea {
+    width: 100%;
+
+    padding: 10px 12px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    border: 1px solid var(--input-border);
+    border-radius: 9px;
+
+    font: inherit;
+    font-size: 13.5px;
+}
+
+.bulletin-form-field textarea {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.bulletin-form-error {
+    margin: -4px 0 14px;
+
+    color: var(--danger-color);
+    font-size: 12.5px;
+}
+
+.bulletin-modal-actions {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 18px;
+}
+
+.bulletin-modal-actions button {
+    flex: 1;
+
+    height: 40px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+
+    background: var(--surface-color);
+    color: var(--text-color);
+
+    font-size: 13.5px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.bulletin-modal-actions button.primary {
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    border-color: var(--button-bg);
+}
+
+.bulletin-modal-actions button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+
+/* =========================================
+   Loading / empty / error states
+   (self-contained — do not rely on
+   dashboard-level .state-box classes)
+========================================= */
+
+.bulletin-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 50px 20px;
+
+    color: var(--muted-text);
+
+    font-size: 13px;
+}
+
+.bulletin-state-box {
+    padding: 40px 22px;
+
+    text-align: center;
+
+    background: var(--surface-color);
+
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+.bulletin-state-title {
+    margin: 0 0 6px;
+
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.bulletin-state-message {
+    margin: 0;
+
+    color: var(--muted-text);
+    font-size: 12.5px;
+}
+
+.bulletin-retry-button {
+    margin-top: 16px;
+
+    padding: 8px 14px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    cursor: pointer;
+
+    font-size: 12.5px;
+    font-weight: 500;
+}

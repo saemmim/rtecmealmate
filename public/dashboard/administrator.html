@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RTEC Meal Mate — Hostel Super</title>
+
+    <link rel="stylesheet" href="administrator.css">
+    <link rel="stylesheet" href="shared/bulletin.css">
+    <link rel="stylesheet" href="shared/receipts.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <main class="dashboard-content">
+
+            <!-- ============================================= -->
+            <!-- Receipts                                       -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="receipts" aria-labelledby="receiptsHeading">
+                <h2 id="receiptsHeading" class="section-heading">Receipts</h2>
+                <p class="section-subheading">View and download meal expense receipts.</p>
+
+                <!-- shared/receipts.js renders everything inside this container -->
+                <div id="receipts-root" data-role="hs"></div>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Bulletin                                       -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="bulletin" aria-labelledby="bulletinHeading">
+                <h2 id="bulletinHeading" class="section-heading">Bulletin</h2>
+                <p class="section-subheading">Announcements and messages for the hostel.</p>
+
+                <!-- shared/bulletin.js renders everything inside this container -->
+                <div id="bulletin-root" data-role="hs"></div>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Select Representatives (default tab)           -->
+            <!-- ============================================= -->
+            <section class="dashboard-section active" data-section="representatives" aria-labelledby="repsHeading">
+                <h2 id="repsHeading" class="section-heading">Representatives</h2>
+                <p class="section-subheading">Assign or remove hall representatives.</p>
+
+                <nav class="tabs" aria-label="Representative status">
+                    <button type="button" class="tab active" data-reps-tab="users">
+                        Users
+                    </button>
+                    <button type="button" class="tab" data-reps-tab="representatives">
+                        Representatives
+                        <span class="tab-count" id="repsActiveCount">0</span>
+                    </button>
+                </nav>
+
+                <section id="repsUsersList" class="user-list" aria-live="polite">
+                    <!-- Eligible users inserted by administrator.js -->
+                </section>
+
+                <section id="repsRepresentativesList" class="user-list" style="display:none;" aria-live="polite">
+                    <!-- Current representatives inserted by administrator.js -->
+                </section>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- User Approval                                  -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="approval" aria-labelledby="approvalHeading">
+                <h2 id="approvalHeading" class="section-heading">User Approval</h2>
+                <p class="section-subheading">Approve, reject or ban user accounts.</p>
+
+                <nav class="tabs" aria-label="User status">
+                    <button type="button" class="tab active" data-approval-tab="pending">
+                        Pending
+                        <span class="tab-count" id="pendingCount">0</span>
+                    </button>
+                    <button type="button" class="tab" data-approval-tab="approved">
+                        Active
+                        <span class="tab-count" id="approvedCount">0</span>
+                    </button>
+                    <button type="button" class="tab" data-approval-tab="banned">
+                        Banned
+                        <span class="tab-count" id="bannedCount">0</span>
+                    </button>
+                </nav>
+
+                <section id="approvalUserList" class="user-list" aria-live="polite">
+                    <!-- Users inserted by administrator.js -->
+                </section>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Options                                        -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="options" aria-labelledby="optionsHeading">
+                <h2 id="optionsHeading" class="section-heading">Options</h2>
+                <p class="section-subheading">Preferences and account controls.</p>
+
+                <div class="options-list">
+
+                    <div class="options-group">
+                        <div class="options-item">
+                            <span>Dark Mode</span>
+
+                            <label class="switch">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="options-group">
+                        <button type="button" class="options-item" id="manageBatchesOption">
+                            <span>Manage Batches</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </button>
+                    </div>
+
+                    <div class="options-group">
+                        <!-- Adjust href once the See Roles page is wired up -->
+                        <a class="options-item" href="../roles.html">
+                            <span>See Roles</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <!-- Adjust href once the Profile Setting page is wired up -->
+                        <a class="options-item" href="../edit-administrator-profile.html">
+                            <span>Profile Setting</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <button type="button" class="options-item danger" id="logoutButton">
+                            Logout
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+
+        <!-- ============================================= -->
+        <!-- Bottom tab navigation                          -->
+        <!-- ============================================= -->
+        <nav class="bottom-tabs" aria-label="Dashboard sections">
+
+            <button type="button" class="bottom-tab" data-tab="receipts">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2.5h12v19l-2.5-1.6L13 21.5l-2.5-1.6L8 21.5l-2-1.6z"/>
+                    <path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5"/>
+                </svg>
+                <span class="bottom-tab-label">Receipts</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="bulletin">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4.5h16v11H9.5L5 19v-3.5H4z"/>
+                    <path d="M7.5 8.5h9M7.5 11.5h6"/>
+                </svg>
+                <span class="bottom-tab-label">Bulletin</span>
+            </button>
+
+            <button type="button" class="bottom-tab active" data-tab="representatives">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="8" r="3"/>
+                    <path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>
+                    <circle cx="17.5" cy="8.5" r="2.3"/>
+                    <path d="M15.5 14.2c2.4.3 4 2 4 4.8"/>
+                </svg>
+                <span class="bottom-tab-label">Reps</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="approval">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="10" cy="8" r="3.2"/>
+                    <path d="M4.5 19c0-3.2 2.5-5.5 5.5-5.5"/>
+                    <path d="M14.5 16.8l2 2 3.5-4"/>
+                </svg>
+                <span class="bottom-tab-label">Approval</span>
+                <span class="bottom-tab-badge" id="approvalBadge" style="display:none;">0</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="options">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 2h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1c.6.5 1.3.9 2 1.2L10 22h4l.5-2.6c.7-.3 1.4-.7 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/>
+                </svg>
+                <span class="bottom-tab-label">Options</span>
+            </button>
+
+        </nav>
+
+    </div>
+
+
+    <script src="shared/bulletin.js"></script>
+    <script src="shared/receipts.js"></script>
+    <script src="administrator.js"></script>
+
+</body>
+</html>

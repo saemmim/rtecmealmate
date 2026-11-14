@@ -1,0 +1,10 @@
+# ========= Testing Different Routes ===========
+
+# Get Active Users
+POST http://localhost:3000/manager/users/transactions
+Content-Type: application/json
+
+{
+	"user_id": 27,
+	"period": "2026-10"
+}

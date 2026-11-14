@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RTEC Meal Mate — Meal Manager</title>
+
+    <link rel="stylesheet" href="manager.css">
+    <link rel="stylesheet" href="shared/bulletin.css">
+    <link rel="stylesheet" href="shared/receipts.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <main class="dashboard-content">
+
+            <!-- ============================================= -->
+            <!-- Receipts                                       -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="receipts" aria-labelledby="receiptsHeading">
+                <h2 id="receiptsHeading" class="section-heading">Receipts</h2>
+                <p class="section-subheading">View and manage shopping receipts.</p>
+
+                <!-- shared/receipts.js renders everything inside this container -->
+                <div id="receipts-root" data-role="mm"></div>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Bulletin                                       -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="bulletin" aria-labelledby="bulletinHeading">
+                <h2 id="bulletinHeading" class="section-heading">Bulletin</h2>
+                <p class="section-subheading">Announcements and messages for the hostel.</p>
+
+                <!-- shared/bulletin.js renders everything inside this container -->
+                <div id="bulletin-root" data-role="mm"></div>
+            </section>
+
+
+
+            <!-- ============================================= -->
+            <!-- Home (default tab)                             -->
+            <!-- ============================================= -->
+            <section class="dashboard-section active" data-section="home" aria-labelledby="homeHeading">
+                <h2 id="homeHeading" class="section-heading">Home</h2>
+                <p class="section-subheading">Today's meal count and this month at a glance.</p>
+
+                <div class="toolbar-row">
+                    <input type="date" id="dayDateInput" class="date-input" aria-label="Select date">
+                    <button type="button" class="toolbar-today-button" id="dayTodayButton">Today</button>
+                </div>
+
+                <div class="today-meal-card" id="todayMealCard">
+                    <!-- Batch rows + total inserted by manager.js -->
+                </div>
+
+
+                <button type="button" class="view-calendar-button" id="viewCalendarButton">
+                    Calendar View
+                </button>
+
+                <h3 class="section-label">Monthly Summary</h3>
+
+                <div class="table-card">
+                    <table class="batch-summary-table">
+                        <thead>
+                            <tr>
+                                <th>Batch</th>
+                                <th class="numeric">Meals</th>
+                                <th class="numeric">Deposit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batchSummaryBody">
+                            <!-- Rows inserted by manager.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <p class="summary-label">Total Meals</p>
+                        <p class="summary-value" id="monthlyTotalMeals">—</p>
+                    </div>
+
+                    <div class="summary-card">
+                        <p class="summary-label">Total Deposit</p>
+                        <p class="summary-value" id="monthlyTotalDeposit">—</p>
+                    </div>
+
+                    <div class="summary-card">
+                        <p class="summary-label">Total Expense</p>
+                        <p class="summary-value" id="monthlyTotalExpense">—</p>
+                    </div>
+
+                    <div class="summary-card">
+                        <p class="summary-label">Balance</p>
+                        <p class="summary-value" id="monthlyBalance">—</p>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- Manage Users                                   -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="manageUsers" aria-labelledby="manageUsersHeading">
+                <h2 id="manageUsersHeading" class="section-heading">Manage Users</h2>
+                <p class="section-subheading">Users in your batch for the selected month.</p>
+
+                <p class="meal-rate-banner" id="mealRateBanner"></p>
+
+                <section id="manageUsersList" class="user-list" aria-live="polite">
+                    <!-- Users for the current period inserted by manager.js -->
+                </section>
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- ============================================= -->
+            <!-- Options                                        -->
+            <!-- ============================================= -->
+            <section class="dashboard-section" data-section="options" aria-labelledby="optionsHeading">
+                <h2 id="optionsHeading" class="section-heading">Options</h2>
+                <p class="section-subheading">Preferences and account controls.</p>
+
+                <div class="options-list">
+
+                    <div class="options-group">
+                        <div class="options-item">
+                            <span>Dark Mode</span>
+
+                            <label class="switch">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+
+                    <!-- Only shown by manager.js while the selected period's status is "open" -->
+                    <div class="options-group" id="countUsersOptionsGroup" style="display:none;">
+                        <!-- Adjust href once the Count Users page is wired up -->
+                        <a class="options-item" href="/count-users.html">
+                            <span>Count Users</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <!-- Only shown by manager.js when the manager has served more than one month -->
+                    <div class="options-group" id="periodOptionsGroup" style="display:none;">
+                        <button type="button" class="options-item" id="changeMonthOption">
+                            <span>Change Month (<span id="changeMonthCurrentLabel"></span>)</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </button>
+                    </div>
+
+                    <!-- Filled in by manager.js depending on the current period's status -->
+                    <div class="options-group" id="periodStatusOptionsGroup" style="display:none;">
+                        <button type="button" class="options-item" id="periodStatusOption">
+                            <span id="periodStatusOptionLabel"></span>
+                        </button>
+                    </div>
+
+                    <div class="options-group">
+                        <button type="button" class="options-item" id="mealConfigOption">
+                            <span>Meal Configuration</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </button>
+                    </div>
+
+
+                    <!-- Return to User Dashboard is always here. manager.js adds the
+                         Hall Representative Dashboard link below it on every visit
+                         to this tab, only when GET /auth/me reports role "hr". -->
+                    <div class="options-group" id="dashboardOptionsGroup">
+                        <a class="options-item" href="index.html">
+                            <span>Return to User Dashboard</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <!-- Adjust href once the See Roles page is wired up -->
+                        <a class="options-item" href="/roles.html">
+                            <span>See Roles</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <!-- Adjust href once the Profile Setting page is wired up -->
+                        <a class="options-item" href="/edit-profile.html">
+                            <span>Profile Setting</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <a class="options-item" href="/about.html">
+                            <span>About Meal Mate</span>
+                            <span class="options-chevron">&rsaquo;</span>
+                        </a>
+                    </div>
+
+                    <div class="options-group">
+                        <button type="button" class="options-item danger" id="logoutButton">
+                            Logout
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+
+        <!-- ============================================= -->
+        <!-- Bottom tab navigation                          -->
+        <!-- ============================================= -->
+        <nav class="bottom-tabs" aria-label="Dashboard sections">
+
+            <button type="button" class="bottom-tab" data-tab="receipts">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2.5h12v19l-2.5-1.6L13 21.5l-2.5-1.6L8 21.5l-2-1.6z"/>
+                    <path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5"/>
+                </svg>
+                <span class="bottom-tab-label">Receipts</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="bulletin">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4.5h16v11H9.5L5 19v-3.5H4z"/>
+                    <path d="M7.5 8.5h9M7.5 11.5h6"/>
+                </svg>
+                <span class="bottom-tab-label">Bulletin</span>
+            </button>
+
+            <button type="button" class="bottom-tab active" data-tab="home">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 11.5 12 4l8 7.5"/>
+                    <path d="M6 10v9.5h12V10"/>
+                </svg>
+                <span class="bottom-tab-label">Home</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="manageUsers">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="8" r="3"/>
+                    <path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>
+                    <circle cx="17.5" cy="8.5" r="2.3"/>
+                    <path d="M15.5 14.2c2.4.3 4 2 4 4.8"/>
+                </svg>
+                <span class="bottom-tab-label">Users</span>
+            </button>
+
+            <button type="button" class="bottom-tab" data-tab="options">
+                <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 2h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1c.6.5 1.3.9 2 1.2L10 22h4l.5-2.6c.7-.3 1.4-.7 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/>
+                </svg>
+                <span class="bottom-tab-label">Options</span>
+            </button>
+
+        </nav>
+
+    </div>
+
+
+    <script src="shared/bulletin.js"></script>
+    <script src="shared/receipts.js"></script>
+    <script src="manager.js"></script>
+
+</body>
+</html>
