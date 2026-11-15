@@ -69,18 +69,18 @@ bulletinsRoutes.post("/", async (req, res) => {
 	}
 
 	try {
-		const user = await authenticateUser(req);
+		let user = await authenticateUser(req);
 		if (user.role === "user") {
 			const manager = await db.query(
 				"SELECT 1 FROM managers WHERE user_id = $1 AND status = 'open' LIMIT 1",
 				[user.id]
 			);
 			if (!manager.rows.length) return res.status(403).json({ error: "Open manager entry required", message: "Not permitted"});
+			else user.role = 'mm'; // Treat as manager for bulletin posting
 		}
 		else if (user.role !== "hr" && user.role !== "hs") {
 			return res.status(403).json({ message: "Not permitted" });
 		}
-
 		
 
 		const { rows } = await db.query(
@@ -92,6 +92,7 @@ bulletinsRoutes.post("/", async (req, res) => {
 		const bulletin = await db.query(`${bulletinSelect} WHERE b.id = $1`, [rows[0].id]);
 		res.status(201).json(bulletin.rows[0]);
 	} catch (error) {
+		console.error('Error creating bulletin:', error);
 		if (error.status) return res.status(error.status).json({ error: error.message });
 		res.status(500).json({ error: "Failed to create bulletin" });
 	}

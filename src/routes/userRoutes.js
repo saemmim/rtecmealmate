@@ -32,45 +32,148 @@ async function getAuthenticatedUserId(req, res) {
 }
 
 
-function effectiveDate() {
+// async function effectiveDate() {
 
-	const configPath = path.resolve(process.cwd(), 'src', 'meal-config.json');
-	const rawConfig = fs.readFileSync(configPath, 'utf8');
-	const config = JSON.parse(rawConfig);
+// 	let offset;
 
-	const offset = config.meal_lock_offset;
+// 	try {
+// 		const {rows: [config]} = await db.query(`
+// 			SELECT meal_lock_offset FROM meal_config WHERE id = 1;
+// 		`);
+		
+// 		offset = config.meal_lock_offset;
 
-	// 1. Parse the offset string
-	const match = offset.match(/^([+-])(\d{1,2}):(\d{2})$/);
-	if (!match) {
-	throw new Error(`Invalid meal_lock_offset format: ${offset}`);
-	}
+// 	} catch (error) {
+// 		console.error("Error fetching meal_lock_offset:", error);
+// 		throw new Error("Failed to fetch meal_lock_offset from database");
+// 	}
 
-	const sign = match[1] === '+' ? 1 : -1;
-	const hours = parseInt(match[2], 10);
-	const minutes = parseInt(match[3], 10);
+// 	// 1. Parse the offset string
+// 	const match = offset.match(/^([+-])(\d{1,2}):(\d{2})$/);
+// 	if (!match) {
+// 	throw new Error(`Invalid meal_lock_offset format: ${offset}`);
+// 	}
 
-	// 2. Create "today at midnight"
-	const now = new Date();
-	const lockTime = new Date(now);
-	lockTime.setHours(0, 0, 0, 0); // midnight today
+// 	const sign = match[1] === '+' ? 1 : -1;
+// 	const hours = parseInt(match[2], 10);
+// 	const minutes = parseInt(match[3], 10);
 
-	// 3. Apply the offset
-	lockTime.setHours(lockTime.getHours() + sign * hours);
-	lockTime.setMinutes(lockTime.getMinutes() + sign * minutes);
+// 	// 2. Create "today at midnight"
+// 	const now = new Date();
+// 	console.log("Current time:", now.toISOString());
+// 	const lockTime = new Date(now);
+// 	lockTime.setHours(0, 0, 0, 0); // midnight today
 
-	const date = new Date().toISOString().slice(0, 10);
-	
-	// 4. Compare current time with lock time
-	if (now >= lockTime) {
-		const nextDay = new Date(date);
-		nextDay.setDate(nextDay.getDate() + 1);
-		return {date: nextDay.toISOString().slice(0, 10), effective_from: 'tomorrow'};
-	}
-	else {
-		return {date: date, effective_from: 'today'};
-	}
+// 	// 3. Apply the offset
+// 	lockTime.setHours(lockTime.getHours() + sign * hours);
+// 	lockTime.setMinutes(lockTime.getMinutes() + sign * minutes);
+
+// 	const date = new Date().toISOString().slice(0, 10);
+// 	console.log("Effective date for toggle-meal:", date);
+
+// 	// 4. Compare current time with lock time
+// 	if (now >= lockTime) {
+// 		const nextDay = new Date(date);
+// 		nextDay.setDate(nextDay.getDate() + 1);
+// 		return {date: nextDay.toISOString().slice(0, 10), effective_from: 'tomorrow'};
+// 	}
+// 	else {
+// 		return {date: date, effective_from: 'today'};
+// 	}
+// }
+
+
+
+async function effectiveDate() {
+
+    // 1. Fetch meal lock offset
+    let offset;
+
+    try {
+        const { rows } = await db.query(`
+            SELECT meal_lock_offset FROM meal_config WHERE id = 1;
+        `);
+
+        if (!rows.length || !rows[0].meal_lock_offset) {
+            throw new Error("meal_lock_offset not found in database");
+        }
+
+        offset = rows[0].meal_lock_offset;
+
+    } catch (error) {
+        console.error("Error fetching meal_lock_offset:", error);
+        throw new Error("Failed to fetch meal_lock_offset from database");
+    }
+
+    // 2. Validate offset
+    const match = offset.match(/^([+-])(\d{1,2}):(\d{2})$/);
+
+    if (!match) {
+        throw new Error(`Invalid meal_lock_offset format: ${offset}`);
+    }
+
+    const sign = match[1] === '+' ? 1 : -1;
+    const hours = Number(match[2]);
+    const minutes = Number(match[3]);
+
+    if (hours > 23 || minutes > 59) {
+        throw new Error(`Invalid meal_lock_offset value: ${offset}`);
+    }
+
+    // 3. Get current time
+    const now = new Date();
+
+    // 4. Get today's date in Bangladesh
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Dhaka',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(now);
+
+    const dateParts = Object.fromEntries(
+        parts.map(part => [part.type, part.value])
+    );
+
+    const year = Number(dateParts.year);
+    const month = Number(dateParts.month);
+    const day = Number(dateParts.day);
+
+    // 5. Calculate Bangladesh midnight in UTC
+    const bangladeshMidnight =
+        Date.UTC(year, month - 1, day) - (6 * 60 * 60 * 1000);
+
+    // 6. Apply meal lock offset
+    const totalMinutes = sign * (hours * 60 + minutes);
+
+    const lockTime = new Date(
+        bangladeshMidnight + totalMinutes * 60 * 1000
+    );
+
+    // 7. Get today's Bangladesh date
+    const today = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    // 8. Compare current time with lock time
+    if (now >= lockTime) {
+
+        const nextDay = new Date(
+            Date.UTC(year, month - 1, day + 1)
+        );
+
+        return {
+            date: nextDay.toISOString().slice(0, 10),
+            effective_from: 'tomorrow'
+        };
+
+    } else {
+
+        return {
+            date: today,
+            effective_from: 'today'
+        };
+    }
 }
+
 
 
 userRoutes.get("/today", async (req, res) => {
@@ -98,6 +201,7 @@ userRoutes.get("/today", async (req, res) => {
 
 		return res.json({ meal_status: "on", guest_meals: guestMeal });
 	} catch (error) {
+		console.error('Error fetching today\'s meals:', error);
 		return res.status(500).json({ message: "Failed to get today's meals" });
 	}
 });
@@ -143,9 +247,9 @@ userRoutes.get("/transactions", async (req, res) => {
 			 ORDER BY d.created_at DESC`,
 			[userId, currentYearMonth]
 		);
-		console.log(rows);
 		return res.status(200).json(rows);
 	} catch (error) {
+		console.error('Error fetching transactions:', error);
 		return res.status(500).json({ message: "Failed to get transactions" });
 	}
 });
@@ -191,7 +295,8 @@ userRoutes.get("/toggle-meal", async (req, res) => {
 			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
 		}
 
-		const date = effectiveDate().date;
+		let date = await effectiveDate();
+		date = date.date;
 
 		const { rows } = await db.query(
 			`SELECT COUNT(*) AS total_meals
@@ -209,7 +314,7 @@ userRoutes.get("/toggle-meal", async (req, res) => {
 		else{ throw new Error("Unexpected meal count"); }
 
 	} catch (error) {
-		console.log(error);
+		console.error('Error fetching toggle status:', error);
 		return res.status(500).json({ message: "Failed to get toggle status" });
 	}
 });
@@ -223,7 +328,8 @@ userRoutes.post("/toggle-meal", async (req, res) => {
 			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
 		}
 
-		const date = effectiveDate().date;
+		let date = await effectiveDate();
+		date = date.date;
 
 		const payload = req.body;
 
@@ -250,6 +356,7 @@ userRoutes.post("/toggle-meal", async (req, res) => {
 		}
 	}
 	catch (error) {
+		console.error('Error toggling meal:', error);
 		return res.status(500).json({ message: "Failed to toggle meal" });
 	}
 });
@@ -262,7 +369,8 @@ userRoutes.get("/guest-meals", async (req, res) => {
 			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
 		}
 
-		const date = effectiveDate().date;
+		let date = await effectiveDate();
+		date = date.date;
 		
 		const { rows } = await db.query(
 			`SELECT COUNT(*) AS guest_meals
@@ -286,7 +394,9 @@ userRoutes.post("/guest-meals", async (req, res) => {
 			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
 		}
 
-		const date = effectiveDate().date;
+		let date = await effectiveDate();
+		date = date.date;
+
 		if (req.body?.effective_date !== date) {
 			return res.status(400).json({ message: "Failed to save. Please reload and try again" });
 		}

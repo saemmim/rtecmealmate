@@ -7,6 +7,7 @@ import db from './middleware/db.js';
 import authRoutes from './routes/authRoutes.js';
 import statusRoutes from './routes/statusRoutes.js';
 import batchesRoutes from './routes/batchesRoutes.js';
+import allowedBatchesRoutes from './routes/allowedBatchesRoutes.js';
 import mealConfigRoutes from './routes/mealConfigRoutes.js';
 
 import userApprovalRoutes from './routes/userApprovalRoutes.js';
@@ -107,6 +108,7 @@ app.use(express.static('./public'));
 
 // Public Routes
 app.use('/auth', authRoutes);
+app.use('/allowed-batches', allowedBatchesRoutes);
 app.use('/status', statusRoutes);
 app.use('/pending/profile-picture', pendingPPRoutes);
 

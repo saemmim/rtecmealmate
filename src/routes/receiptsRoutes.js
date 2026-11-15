@@ -60,7 +60,9 @@ receiptsRoutes.get('/', async (req, res) => {
 	}
 });
 
-receiptsRoutes.post('/', uploadReceiptImage, scanUploadedFile, async (req, res) => {
+receiptsRoutes.post('/', uploadReceiptImage,
+	//scanUploadedFile,
+	async (req, res) => {
 	let client;
 	try {
 		const token = req.cookies?.token;

@@ -31,47 +31,118 @@ function addDays(dateString, days) {
 }
 
 
-function getTimeDateInfo (offset) {
-    const match = /^([+-])(\d{2}):(\d{2})$/.exec(offset);
-    if (!match) {
-        throw new Error('Invalid meal lock offset.');
-    }
+// function getTimeDateInfo (offset) {
+//     const match = /^([+-])(\d{2}):(\d{2})$/.exec(offset);
+//     if (!match) {
+//         throw new Error('Invalid meal lock offset.');
+//     }
 
-    const [, sign, hours, minutes] = match;
-    const offsetMinutes = Number(hours) * 60 + Number(minutes);
-    if (offsetMinutes > 12 * 60 || Number(minutes) > 59) {
-        throw new Error('Meal lock offset must be between -12:00 and +12:00.');
-    }
+//     const [, sign, hours, minutes] = match;
+//     const offsetMinutes = Number(hours) * 60 + Number(minutes);
+//     if (offsetMinutes > 12 * 60 || Number(minutes) > 59) {
+//         throw new Error('Meal lock offset must be between -12:00 and +12:00.');
+//     }
 
-    const timeMinutes = sign === '+' ? offsetMinutes : 24 * 60 - offsetMinutes;
-    const hour = Math.floor(timeMinutes / 60);
-    const minute = timeMinutes % 60;
+//     const timeMinutes = sign === '+' ? offsetMinutes : 24 * 60 - offsetMinutes;
+//     const hour = Math.floor(timeMinutes / 60);
+//     const minute = timeMinutes % 60;
 
-    const now = new Date();
-    const formattedDate = [
-        now.getFullYear(),
-        String(now.getMonth() + 1).padStart(2, '0'),
-        String(now.getDate()).padStart(2, '0')
-    ].join('-');
+//     const now = new Date();
+//     const formattedDate = [
+//         now.getFullYear(),
+//         String(now.getMonth() + 1).padStart(2, '0'),
+//         String(now.getDate()).padStart(2, '0')
+//     ].join('-');
 
-    const date = new Date(now);
-    if (sign === '-') {
-        date.setDate(date.getDate() - 1);
-    }
+//     const date = new Date(now);
+//     if (sign === '-') {
+//         date.setDate(date.getDate() - 1);
+//     }
 
-    const lockDate = new Date(date);
+//     const lockDate = new Date(date);
     
-    lockDate.setHours(hour, minute, 0, 0);
+//     lockDate.setHours(hour, minute, 0, 0);
 
-    const delayForNextPulse = now >= lockDate
-        ?  24 * 60 * 60 * 1000 + lockDate.getTime() - now.getTime()
-        : lockDate.getTime() - now.getTime();
+//     const delayForNextPulse = now >= lockDate
+//         ?  24 * 60 * 60 * 1000 + lockDate.getTime() - now.getTime()
+//         : lockDate.getTime() - now.getTime();
 
-    return { date: formattedDate, delay: delayForNextPulse, timePassed: now >= lockDate };
+//     return { date: formattedDate, delay: delayForNextPulse, timePassed: now >= lockDate };
+// }
+
+async function getTimeDateInfo (offset) {
+
+    // Validate offset
+    const match = offset.match(/^([+-])(\d{2}):(\d{2})$/);
+
+    if (!match) {
+        throw new Error("Invalid offset format");
+    }
+
+    const sign = match[1] === "+" ? 1 : -1;
+    const hours = Number(match[2]);
+    const minutes = Number(match[3]);
+
+    if (hours > 12 || minutes > 59 || (hours === 12 && minutes !== 0)) {
+        throw new Error("Offset must be between -12:00 and +12:00");
+    }
+
+    const offsetMs = sign * (hours * 60 + minutes) * 60 * 1000;
+
+    // Get current timestamp
+    const now = Date.now();
+
+    // Get Bangladesh date
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Dhaka",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(new Date(now));
+
+    const dateParts = Object.fromEntries(
+        parts.map(p => [p.type, p.value])
+    );
+
+    const { year, month, day } = dateParts;
+
+    // Bangladesh midnight in UTC
+    const midnight = Date.UTC(
+        Number(year),
+        Number(month) - 1,
+        Number(day)
+    ) - (6 * 60 * 60 * 1000);
+
+    // Today's cutoff
+    const cutoff = midnight + offsetMs;
+
+    // Has today's cutoff passed?
+    const timePassed = now >= cutoff;
+
+    // Expected execution date
+    const expectedDateTimestamp = timePassed
+        ? midnight + 24 * 60 * 60 * 1000
+        : midnight;
+
+    // Next cutoff
+    const nextCutoff = timePassed
+        ? cutoff + 24 * 60 * 60 * 1000
+        : cutoff;
+
+    // Format expected execution date
+    const expectedExecutedDate = new Date(
+        expectedDateTimestamp + 6 * 60 * 60 * 1000
+    ).toISOString().slice(0, 10);
+
+    // Delay until next cutoff
+    const delay = Math.max(0, nextCutoff - now);
+
+    return {
+        expectedExecutedDate,
+        delay,
+        timePassed
+    };
 }
-
-
-
 
 
 
@@ -87,33 +158,51 @@ async function dailyTaskScheduler () {
 
         let {rows: [mealConfig]} = await db.query('SELECT * FROM meal_config WHERE id = 1;');
 
-        const { date, delay, timePassed } = getTimeDateInfo (mealConfig.meal_lock_offset);
-        console.log(date, delay, timePassed);
+        const { expectedExecutedDate, delay, timePassed } = await getTimeDateInfo (mealConfig.meal_lock_offset);
+        console.log(expectedExecutedDate, delay, timePassed);
         
-        const today = getDateString();
-        const todayDate = new Date(today);
+        const expectedExecutionDate = new Date(expectedExecutedDate);
         const lastExecutionDate = new Date(mealConfig.last_execution_date);
 
-        if (lastExecutionDate < todayDate && !timePassed) {
-            dailyTask = setTimeout (() => {
-                autoAddNextDayMeals(today)
-            }, delay);
-            console.log('Daily task will be executed after', delay, 'ms');
-            return
-        }
-        if (lastExecutionDate < todayDate && timePassed) {
-            console.log('lastExecutionDate < todayDate && timePassed')
-            console.log(addDays(today, -1));
-            autoAddNextDayMeals(addDays(today, -1));
-            return
-        }
-        if (timePassed && (lastExecutionDate == todayDate || lastExecutionDate > todayDate)) {
+        // if (lastExecutionDate < todayDate && !timePassed) {
+        //     dailyTask = setTimeout (() => {
+        //         autoAddNextDayMeals(today)
+        //     }, delay);
+        //     console.log('Daily task will be executed after', delay, 'ms');
+        //     return
+        // }
+        // if (lastExecutionDate < todayDate && timePassed) {
+        //     console.log('lastExecutionDate < todayDate && timePassed')
+        //     console.log(addDays(today, -1));
+        //     autoAddNextDayMeals(addDays(today, -1));
+        //     return
+        // }
+        // if (timePassed && (lastExecutionDate == todayDate || lastExecutionDate > todayDate)) {
+        //     dailyTask = setTimeout(() => {
+        //         autoAddNextDayMeals(addDays(today, 1));
+        //     }, delay);
+        //     console.log('Daily task will be executed after', delay, 'ms. Tomorrow:', addDays(today, 1));
+        //     return
+        // }
+
+        if (lastExecutionDate == expectedExecutionDate) {
             dailyTask = setTimeout(() => {
-                autoAddNextDayMeals(addDays(today, 1));
+                autoAddNextDayMeals(addDays(expectedExecutionDate, 1));
             }, delay);
-            console.log('Daily task will be executed after', delay, 'ms. Tomorrow:', addDays(today, 1));
+            console.log('Daily task will be executed after', delay, 'ms. Tomorrow:', addDays(expectedExecutionDate, 1));
             return
         }
+        if (lastExecutionDate < expectedExecutionDate) {
+            console.log('lastExecutionDate < expectedExecutionDate')
+            autoAddNextDayMeals(expectedExecutedDate);
+            return
+        }
+        if (lastExecutionDate > expectedExecutionDate) {
+            console.log('lastExecutionDate > expectedExecutionDate')
+            autoAddNextDayMeals(addDays(expectedExecutedDate, 1));
+            return
+        }
+
         
     } catch (error) {console.log(error)}
 }

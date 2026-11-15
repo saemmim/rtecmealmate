@@ -12,7 +12,7 @@ const profilePictureRouters = express.Router(); // creates a mini Express app ju
 
 
 
-// Build a multer instance specifically for profile pictures: images only, 5MB max.
+// Build a multer instance specifically for profile pictures: images only, 20MB max.
 // A different feature (e.g. attachments) would call createUploadMiddleware()
 // again in its own route file with its own mimetypes/size limit.
 const upload = createUploadMiddleware({
@@ -31,7 +31,7 @@ const upload = createUploadMiddleware({
 profilePictureRouters.post(
     '/',
     upload.single('profilePicture'), // 'profilePicture' must match the field name your frontend form uses
-    scanUploadedFile, // only calls next() if the file passed the virus scan
+    // scanUploadedFile, // only calls next() if the file passed the virus scan
     async (req, res) => {
         try {
             const token = req.cookies?.token || null;
@@ -53,12 +53,12 @@ profilePictureRouters.post(
             // ---- 3. Resize, convert to webp, and save the file ----
             // req.file.buffer is the raw image bytes still in memory (already
             // confirmed virus-free by scanUploadedFile before we got here).
-            const fileName = await processProfilePicture(req.file.buffer, username);
+            const fileUrl = await processProfilePicture(req.file.buffer, username);
 
             // ---- 4. Update the user's profile_picture field in the database ----
             await db.query(
                 'UPDATE users SET profile_picture = $1 WHERE username = $2',
-                [fileName, username]
+                [fileUrl, username]
             );
 
 

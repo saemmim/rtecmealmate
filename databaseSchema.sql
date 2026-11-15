@@ -311,58 +311,23 @@ CREATE TABLE bulletins (
 
 
 
-
 -- =============================================
--- 9. Logs
+-- 9. MEAL CONFIGURATIONS
 -- =============================================
-CREATE TABLE logs (
-    id              BIGSERIAL PRIMARY KEY,
+CREATE TABLE meal_config (
+    id                      INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
 
-    log             TEXT NOT NULL,
+    meal_lock_offset        VARCHAR(7) NOT NULL
+                            CHECK (meal_lock_offset ~ '^[+-]?\d{2}:\d{2}$'),
 
-    level           VARCHAR(20) NOT NULL DEFAULT 'info',
+    temp_meal_lock_offset   VARCHAR(7) DEFAULT NULL
+                            CHECK (
+                                temp_meal_lock_offset IS NULL OR
+                                temp_meal_lock_offset ~ '^[+-]?\d{2}:\d{2}$'
+                            ),
 
-    metadata        JSONB NOT NULL DEFAULT '{}'::JSONB,
+    last_execution_date     VARCHAR(10) NOT NULL DEFAULT '2026-12-01'
+                            CHECK (last_execution_date ~ '^\d{4}-\d{2}-\d{2}$'),
 
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    expected_meal_rate      DECIMAL(12,2) DEFAULT NULL
 );
-
-CREATE INDEX idx_logs_created_at ON logs(created_at DESC);
-CREATE INDEX idx_logs_level ON logs(level);
-
-
-
-
-CREATE TABLE logs (
-    id              BIGSERIAL PRIMARY KEY,
-
-    level           VARCHAR(20) NOT NULL DEFAULT 'info',
-    message         TEXT NOT NULL,
-
-    user_id         BIGINT REFERENCES users(id) ON DELETE SET NULL,
-
-    source          VARCHAR(50),
-    action          VARCHAR(100),
-
-    request_id      UUID,
-    ip_address      INET,
-
-    metadata        JSONB NOT NULL DEFAULT '{}'::JSONB,
-
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_logs_created_at
-    ON logs(created_at DESC);
-
-CREATE INDEX idx_logs_level
-    ON logs(level);
-
-CREATE INDEX idx_logs_user_id
-    ON logs(user_id);
-
-CREATE INDEX idx_logs_action
-    ON logs(action);
-
-CREATE INDEX idx_logs_request_id
-    ON logs(request_id);

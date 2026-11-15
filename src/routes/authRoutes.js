@@ -9,7 +9,6 @@ dotenv.config();
 const authRoutes = express.Router();
 
 
-const allowedBatches = ['3rd', '4th', '5th', '6th', '7th', '8th'];
 const allowedDepartments = ['YE', 'FE', 'AE', 'WPE'];
 
 
@@ -89,6 +88,19 @@ authRoutes.post('/login', async (req, res) => {
 
 authRoutes.post('/signup', async (req, res) => {
     try {
+
+        let allowedBatches;
+        try {
+            const { rows } = await db.query(`
+                SELECT batch FROM batches
+                WHERE status = 'open' ORDER BY batch ASC;
+                `);
+            allowedBatches = rows.map(row => row.batch);
+        } catch (error) {
+            console.error('Error retrieving batches:', error);
+            res.status(500).json({ error: 'Failed to retrieve batches' });
+        }
+
         const { name, username, batch, department, email, phone, password } = req.body || {};
 
         const errors = [];

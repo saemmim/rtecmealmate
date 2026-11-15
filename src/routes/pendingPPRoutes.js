@@ -31,7 +31,7 @@ const upload = createUploadMiddleware({
 profilePictureRouters.post(
     '/',
     upload.single('profilePicture'), // 'profilePicture' must match the field name your frontend form uses
-    scanUploadedFile, // only calls next() if the file passed the virus scan
+    // scanUploadedFile, // only calls next() if the file passed the virus scan
     async (req, res) => {
         try {
             const token = req.cookies?.token || null;

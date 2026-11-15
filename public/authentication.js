@@ -8,7 +8,56 @@ const signupTab = document.getElementById("signupTab");
 const loginForm = document.getElementById("loginForm");
 const signupForm = document.getElementById("signupForm");
 
+const signupBatch = document.getElementById("signupBatch");
+
 const authMessage = document.getElementById("authMessage");
+
+
+// =========================================================
+// LOAD BATCHES
+// =========================================================
+
+async function loadBatches() {
+
+    try {
+
+        const res = await fetch("/allowed-batches");
+
+        if (!res.ok) {
+            throw new Error("Could not load batches.");
+        }
+
+        const batches = await res.json();
+
+        // Keep only open batches, ordered by batch number
+        const openBatches = batches
+            .filter((b) => b.status === "open")
+            .sort((a, b) => Number(a.batch) - Number(b.batch));
+
+        openBatches.forEach((b) => {
+            const option = document.createElement("option");
+            option.value = b.batch;        // number sent to backend
+            option.textContent = b.name;   // name shown to the user
+            signupBatch.appendChild(option);
+        });
+
+        if (openBatches.length === 0) {
+            signupBatch.options[0].textContent = "No batches available";
+            signupBatch.disabled = true;
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        signupBatch.options[0].textContent = "Failed to load batches";
+        signupBatch.disabled = true;
+
+    }
+
+}
+
+loadBatches();
 
 
 // =========================================================
@@ -103,7 +152,7 @@ signupForm.addEventListener("submit", async (event) => {
 
     const name = document.getElementById("signupName").value;
     const username = document.getElementById("signupUsername").value;
-    const batch = document.getElementById("signupBatch").value;
+    const batch = signupBatch.value; // batch number, e.g. "4"
     const department = document.getElementById("signupDepartment").value;
     const email = document.getElementById("signupEmail").value;
     const phone = document.getElementById("signupPhone").value;
@@ -122,9 +171,8 @@ signupForm.addEventListener("submit", async (event) => {
     }
 
 
-
     // Send signup request to server
-    
+
     try {
 
         const res = await fetch("/auth/signup", {
