@@ -6,81 +6,28 @@ import fs from 'fs';
 
 const userRoutes = express.Router();
 
-async function getAuthenticatedUserId(req, res) {
-
-    const token = req.cookies?.token;
-
-	if (!token || !process.env.JWT_SECRET) return null;
-
-	let payload;
+async function noAccessForHS(req, res, next) {
 	try {
-		payload = jwt.verify(token, process.env.JWT_SECRET);
-	} catch {
-		return null;
+		const id =  jwt.verify(req.cookies?.token, process.env.JWT_SECRET).id;
+
+		const { rows } = await db.query('SELECT role FROM users WHERE id = $1', [id]);
+
+		if (rows[0].role == 'hs') return res.json({
+            error: 'Not permitted',
+            message: 'Hostel super is not allowed to do these tasks.',
+            redirect: '/dashboard/administrator.html'
+        });
+
+		next();
+
+	} catch (error) {
+		console.error('Error in noAccessForHS middleware:', error);
+		next(error);
 	}
-
-	const userId = payload?.id;
-	if (!userId) return null;
-
-	const { rows } = await db.query(
-		"SELECT id FROM users WHERE id = $1",
-		[userId]
-	);
-
-	if (!rows[0]) return null; else return rows[0].id;
-
 }
 
+userRoutes.use(noAccessForHS);
 
-// async function effectiveDate() {
-
-// 	let offset;
-
-// 	try {
-// 		const {rows: [config]} = await db.query(`
-// 			SELECT meal_lock_offset FROM meal_config WHERE id = 1;
-// 		`);
-		
-// 		offset = config.meal_lock_offset;
-
-// 	} catch (error) {
-// 		console.error("Error fetching meal_lock_offset:", error);
-// 		throw new Error("Failed to fetch meal_lock_offset from database");
-// 	}
-
-// 	// 1. Parse the offset string
-// 	const match = offset.match(/^([+-])(\d{1,2}):(\d{2})$/);
-// 	if (!match) {
-// 	throw new Error(`Invalid meal_lock_offset format: ${offset}`);
-// 	}
-
-// 	const sign = match[1] === '+' ? 1 : -1;
-// 	const hours = parseInt(match[2], 10);
-// 	const minutes = parseInt(match[3], 10);
-
-// 	// 2. Create "today at midnight"
-// 	const now = new Date();
-// 	console.log("Current time:", now.toISOString());
-// 	const lockTime = new Date(now);
-// 	lockTime.setHours(0, 0, 0, 0); // midnight today
-
-// 	// 3. Apply the offset
-// 	lockTime.setHours(lockTime.getHours() + sign * hours);
-// 	lockTime.setMinutes(lockTime.getMinutes() + sign * minutes);
-
-// 	const date = new Date().toISOString().slice(0, 10);
-// 	console.log("Effective date for toggle-meal:", date);
-
-// 	// 4. Compare current time with lock time
-// 	if (now >= lockTime) {
-// 		const nextDay = new Date(date);
-// 		nextDay.setDate(nextDay.getDate() + 1);
-// 		return {date: nextDay.toISOString().slice(0, 10), effective_from: 'tomorrow'};
-// 	}
-// 	else {
-// 		return {date: date, effective_from: 'today'};
-// 	}
-// }
 
 
 
@@ -178,10 +125,7 @@ async function effectiveDate() {
 
 userRoutes.get("/today", async (req, res) => {
 	try {
-		const userId = await getAuthenticatedUserId(req);
-		if (!userId) {
-			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
-		}
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		const { rows } = await db.query(
 			`SELECT
@@ -209,10 +153,7 @@ userRoutes.get("/today", async (req, res) => {
 userRoutes.get("/transactions", async (req, res) => {
 	try {
 		
-		const userId = await getAuthenticatedUserId(req);
-		if (!userId) {
-			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
-		}
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		if (req.query.query) {
 			
@@ -257,10 +198,7 @@ userRoutes.get("/transactions", async (req, res) => {
 
 userRoutes.get("/calendar", async (req, res) => {
     try {
-        const userId = await getAuthenticatedUserId(req);
-        if (!userId) {
-            return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
-        }
+        const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
         const period = req.query.query;
         if (typeof period !== "string" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) {
@@ -290,10 +228,7 @@ userRoutes.get("/calendar", async (req, res) => {
 
 userRoutes.get("/toggle-meal", async (req, res) => {
 	try {
-		const userId = await getAuthenticatedUserId(req);
-		if (!userId) {
-			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
-		}
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		let date = await effectiveDate();
 		date = date.date;
@@ -323,10 +258,7 @@ userRoutes.get("/toggle-meal", async (req, res) => {
 userRoutes.post("/toggle-meal", async (req, res) => {
 	try {
 
-		const userId = await getAuthenticatedUserId(req);
-		if (!userId) {
-			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
-		}
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		let date = await effectiveDate();
 		date = date.date;
@@ -364,10 +296,7 @@ userRoutes.post("/toggle-meal", async (req, res) => {
 
 userRoutes.get("/guest-meals", async (req, res) => {
 	try {
-		const userId = await getAuthenticatedUserId(req);
-		if (!userId) {
-			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
-		}
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		let date = await effectiveDate();
 		date = date.date;
@@ -389,10 +318,7 @@ userRoutes.get("/guest-meals", async (req, res) => {
 
 userRoutes.post("/guest-meals", async (req, res) => {
 	try {
-		const userId = await getAuthenticatedUserId(req);
-		if (!userId) {
-			return res.status(401).json({ redirect: "/authentication.html", message: "Authentication required" });
-		}
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		let date = await effectiveDate();
 		date = date.date;

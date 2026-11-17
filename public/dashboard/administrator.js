@@ -402,12 +402,12 @@ function renderApprovalUsers(tabName) {
 
 
 function createApprovalUserCard(user, tabName) {
-
+    
     if (user.profile_picture) {
             return `
         <article class="user-card" data-user-id="${escapeHtml(user.id)}">
 
-            <img class="profile-picture" src="../${escapeHtml(user.profile_picture)}" alt="${escapeHtml(user.name)}" loading="lazy" onerror="this.src='${createInitialAvatar(user.name)}'">
+            <img class="profile-picture" src="${escapeHtml(user.profile_picture)}" alt="${escapeHtml(user.name)}" loading="lazy" onerror="this.src='${createInitialAvatar(user.name)}'">
 
             <div class="user-info">
                 <h2 class="name">${escapeHtml(user.name)}</h2>

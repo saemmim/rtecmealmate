@@ -1,8 +1,42 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import db from '../middleware/db.js';
+
 const userApprovalRoutes = express.Router();
 
-import db from '../middleware/db.js';
+
+const requireHsRole = async (req, res, next) => {
+
+	const token = req.cookies?.token;
+
+	if (!token) {
+        console.log ('no token');
+		return res.status(401).json({ redirect: '/dashboard' });
+	}
+
+	try {
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const id = decoded.id;
+		const { rows: users } = await db.query(
+			"SELECT role FROM users WHERE id = $1 AND status <> 'deleted' LIMIT 1",
+			[id]
+		);
+
+		if (!users.length || users[0].role !== 'hs') {
+            console.log('user not found');
+			return res.status(401).json({ redirect: '/dashboard' });
+		}
+
+		next();
+	} catch (error) {
+        console.log(error);
+		return res.status(401).json({ redirect: '/dashboard' });
+	}
+};
+
+userApprovalRoutes.use(requireHsRole);
+
+
 
 const getCurrentDateTime = () => {
   const now = new Date();

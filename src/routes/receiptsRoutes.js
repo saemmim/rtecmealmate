@@ -141,7 +141,7 @@ const uploadReceiptImageIfPresent = (req, res, next) => {
 	uploadReceiptImage(req, res, (err) => {
 		if (err) return next(err);
 		if (!req.file) return next();
-		scanUploadedFile(req, res, next);
+		// scanUploadedFile(req, res, next);
 	});
 };
 
