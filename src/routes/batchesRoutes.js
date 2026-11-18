@@ -38,7 +38,7 @@ batchesRoutes.get('/', async (req, res) => {
 		const { rows } = await db.query(`
 			SELECT b.batch, b.name, COUNT(u.id) AS total_students, b.status
 			FROM batches b LEFT JOIN users u ON u.batch = b.batch 
-			AND u.status IN ('approved', 'archived')
+			AND u.status IN ('pending', 'approved', 'banned', 'archived')
 			GROUP BY b.batch, b.name, b.status ORDER BY b.batch ASC;
 			`);
         res.json(rows);
@@ -104,7 +104,7 @@ batchesRoutes.post('/change-status', async (req, res) => {
 		if (setStatus === 'deleted') {
 			const { rows } = await db.query(`
 				SELECT COUNT(*) AS students FROM users
-				WHERE batch = $1 AND status IN ('approved', 'archived');
+				WHERE batch = $1 AND status IN ('pending', 'approved', 'banned', 'archived');
 				`, [batch]);
 
 			if (rows[0].students == 0) {
@@ -125,6 +125,26 @@ batchesRoutes.post('/change-status', async (req, res) => {
 		if (rows.length === 0) {
 			return res.status(404).json({ error: 'Batch not found' });
 		}
+
+		if (setStatus === 'archived') {
+			await db.query(
+				`UPDATE users
+				SET status = 'archived'
+				WHERE batch = $1
+				AND status IN ('approved', 'pending');`,
+				[batch]
+			);
+		}
+		else if (setStatus === 'open') {
+			await db.query(
+				`UPDATE users
+				SET status = 'approved'
+				WHERE batch = $1
+				AND status = 'archived';`,
+				[batch]
+			);
+		}
+
 		res.json(rows[0]);
 	} catch (error) {
 		console.error('Error changing batch status:', error);
