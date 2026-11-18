@@ -260,6 +260,16 @@ userRoutes.post("/toggle-meal", async (req, res) => {
 
 		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
+		const  { rows }  = await db.query(
+			`SELECT status FROM users WHERE id = $1;`, [userId]
+		);
+
+		if (rows[0].status !== 'approved') {
+			return res.status(403).json({
+				message: "You are not allowed to turn on your meal."
+			});
+		}
+
 		let date = await effectiveDate();
 		date = date.date;
 
