@@ -201,7 +201,7 @@ function createUserCard(user, buttonText) {
         : "/images/default-profile.png";
         */
 
-    const profilePicture = user.profilePicture;
+    const profilePicture = user.profile_picture;
 
     const actionClass = buttonText === "Complete" ? "complete" : "remaining";
 

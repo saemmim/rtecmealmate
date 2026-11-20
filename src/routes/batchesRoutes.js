@@ -1,7 +1,37 @@
 import express from 'express';
 import db from '../middleware/db.js';
+import jwt from 'jsonwebtoken';
+
 
 const batchesRoutes = express.Router();
+
+
+async function isAuthorized(req, res, next) {
+
+    try {
+        const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+
+        const { rows } = await db.query("SELECT role FROM users WHERE id = $1", [decoded.id]);
+
+        if (rows[0].role === 'hs') {
+            return next();
+        } else {
+			return res.status(403).json({
+				error: 'Forbidden',
+				message: 'You do not have permission to access this resource.',
+				redirect: '/dashboard'
+			});
+		}
+    } catch (error) {
+		console.error('Error in authentication middleware:', error);
+        return res.status(401).json({
+            message: 'Something went wrong with authentication.',
+            redirect: '/authentication.html'
+        });
+    }
+}
+
+batchesRoutes.use(isAuthorized);
 
 batchesRoutes.get('/', async (req, res) => {
 	try {
@@ -101,10 +131,5 @@ batchesRoutes.post('/change-status', async (req, res) => {
 		res.status(500).json({ error: 'Failed to change batch status' });
 	}
 });
-
-
-
-
-
 
 export default batchesRoutes;

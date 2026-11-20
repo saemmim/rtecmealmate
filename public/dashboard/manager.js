@@ -232,12 +232,19 @@ async function resolveManagerPeriod() {
             { method: "GET", headers: { "Accept": "application/json" } },
             REQUEST_TIMEOUT
         );
+        
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(`Failed to load manager periods: ${response.status}`);
-        }
 
-        const data = await response.json();
+            if (data && data.redirect) {
+                window.location.href = data.redirect;
+                return;
+            }
+            
+            throw new Error(`Failed to load manager periods: ${response.status}`);
+        }       
+
 
         if (!Array.isArray(data)) {
             throw new Error("Backend returned an invalid periods format.");

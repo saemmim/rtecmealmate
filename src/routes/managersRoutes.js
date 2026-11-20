@@ -136,7 +136,7 @@ managersRoutes.post('/remove', requireHr, async (req, res, next) => {
 
 
 
-managersRoutes.get('/month', async (req, res) => {
+managersRoutes.get('/month', requireHr, async (req, res) => {
 	try {
 
 		const period = req.query.query;
@@ -168,7 +168,7 @@ managersRoutes.get('/month', async (req, res) => {
 	}
 });
 
-managersRoutes.post('/month', async (req, res) => {
+managersRoutes.post('/month', requireHr, async (req, res) => {
 	try {
 		const { id, period, setStatus } = req.body ?? {};
 

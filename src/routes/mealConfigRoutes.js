@@ -1,14 +1,6 @@
 import express from "express";
-import fs from 'fs';
-import path from 'path';
 import db from '../middleware/db.js';
-
-
-import cron from 'node-cron';
-import { TIMEOUT } from "dns";
-import { type } from "os";
-
-
+import jwt from 'jsonwebtoken';
 
 //--------------------------------------------------------------------------------
 
@@ -21,54 +13,21 @@ function getDateString(date = new Date()) {
     return `${year}-${month}-${day}`;
 }
 
-function addDays(dateString, days) {
-    const [year, month, day] = dateString.split("-").map(Number);
+function addDays(dateInput, days) {
+    let date;
 
-    const date = new Date(year, month - 1, day);
+    if (dateInput instanceof Date) {
+        date = new Date(dateInput);                 // clone the Date
+    } else if (typeof dateInput === "string") {
+        const [year, month, day] = dateInput.split("-").map(Number);
+        date = new Date(year, month - 1, day);
+    } else {
+        throw new Error(`addDays expects string or Date, got ${typeof dateInput}`);
+    }
+
     date.setDate(date.getDate() + days);
-
     return getDateString(date);
 }
-
-
-// function getTimeDateInfo (offset) {
-//     const match = /^([+-])(\d{2}):(\d{2})$/.exec(offset);
-//     if (!match) {
-//         throw new Error('Invalid meal lock offset.');
-//     }
-
-//     const [, sign, hours, minutes] = match;
-//     const offsetMinutes = Number(hours) * 60 + Number(minutes);
-//     if (offsetMinutes > 12 * 60 || Number(minutes) > 59) {
-//         throw new Error('Meal lock offset must be between -12:00 and +12:00.');
-//     }
-
-//     const timeMinutes = sign === '+' ? offsetMinutes : 24 * 60 - offsetMinutes;
-//     const hour = Math.floor(timeMinutes / 60);
-//     const minute = timeMinutes % 60;
-
-//     const now = new Date();
-//     const formattedDate = [
-//         now.getFullYear(),
-//         String(now.getMonth() + 1).padStart(2, '0'),
-//         String(now.getDate()).padStart(2, '0')
-//     ].join('-');
-
-//     const date = new Date(now);
-//     if (sign === '-') {
-//         date.setDate(date.getDate() - 1);
-//     }
-
-//     const lockDate = new Date(date);
-    
-//     lockDate.setHours(hour, minute, 0, 0);
-
-//     const delayForNextPulse = now >= lockDate
-//         ?  24 * 60 * 60 * 1000 + lockDate.getTime() - now.getTime()
-//         : lockDate.getTime() - now.getTime();
-
-//     return { date: formattedDate, delay: delayForNextPulse, timePassed: now >= lockDate };
-// }
 
 async function getTimeDateInfo (offset) {
 
@@ -144,8 +103,6 @@ async function getTimeDateInfo (offset) {
     };
 }
 
-
-
 let dailyTask = null;
 
 async function dailyTaskScheduler () {
@@ -163,50 +120,19 @@ async function dailyTaskScheduler () {
         
         const expectedExecutionDate = new Date(expectedExecutedDate);
         const lastExecutionDate = new Date(mealConfig.last_execution_date);
+        console.log(lastExecutionDate, expectedExecutionDate);
 
-        // if (lastExecutionDate < todayDate && !timePassed) {
-        //     dailyTask = setTimeout (() => {
-        //         autoAddNextDayMeals(today)
-        //     }, delay);
-        //     console.log('Daily task will be executed after', delay, 'ms');
-        //     return
-        // }
-        // if (lastExecutionDate < todayDate && timePassed) {
-        //     console.log('lastExecutionDate < todayDate && timePassed')
-        //     console.log(addDays(today, -1));
-        //     autoAddNextDayMeals(addDays(today, -1));
-        //     return
-        // }
-        // if (timePassed && (lastExecutionDate == todayDate || lastExecutionDate > todayDate)) {
-        //     dailyTask = setTimeout(() => {
-        //         autoAddNextDayMeals(addDays(today, 1));
-        //     }, delay);
-        //     console.log('Daily task will be executed after', delay, 'ms. Tomorrow:', addDays(today, 1));
-        //     return
-        // }
-
-        if (lastExecutionDate == expectedExecutionDate) {
-            dailyTask = setTimeout(() => {
-                autoAddNextDayMeals(addDays(expectedExecutionDate, 1));
-            }, delay);
-            console.log('Daily task will be executed after', delay, 'ms. Tomorrow:', addDays(expectedExecutionDate, 1));
-            return
-        }
         if (lastExecutionDate < expectedExecutionDate) {
-            console.log('lastExecutionDate < expectedExecutionDate')
-            autoAddNextDayMeals(expectedExecutedDate);
+            autoAddNextDayMeals(addDays(expectedExecutionDate, -1));
             return
         }
-        if (lastExecutionDate > expectedExecutionDate) {
-            console.log('lastExecutionDate > expectedExecutionDate')
-            autoAddNextDayMeals(addDays(expectedExecutedDate, 1));
-            return
-        }
-
+        dailyTask = setTimeout(() => {
+            autoAddNextDayMeals(getDateString(expectedExecutionDate));
+        }, delay);
+        console.log('Daily task will be executed after', delay, 'ms. Tomorrow:', addDays(expectedExecutionDate, 1));
         
     } catch (error) {console.log(error)}
 }
-
 
 async function autoAddNextDayMeals(date) {
     try {
@@ -243,13 +169,13 @@ async function autoAddNextDayMeals(date) {
             console.error('Error occurred during write operation:', error);
         }
         
+        console.log('Daily task executed successfully for date:', date);
         dailyTaskScheduler();
 
     } catch(error) {
         console.log('Error occured ducting executing daily task.\n', error)
     }
 }
-
 
 dailyTaskScheduler();
 
@@ -417,6 +343,12 @@ mealConfigRoutes.post('/', async (req, res) => {
         });
     }
 
+    const offsetSign = mealLockOffsetMatch[1] === '-' ? -1 : 1;
+    const offsetMinutes = offsetSign * (mealLockOffsetHours * 60 + mealLockOffsetMinutes);
+    const minutesAfterMidnight = ((offsetMinutes % 1440) + 1440) % 1440;
+    const cutOffHour24 = Math.floor(minutesAfterMidnight / 60);
+    const cutOffTime = `${String(cutOffHour24 % 12 || 12).padStart(2, '0')}:${String(minutesAfterMidnight % 60).padStart(2, '0')} ${cutOffHour24 < 12 ? 'AM' : 'PM'}`;
+
     try {
         const { rows : [config] } = await db.query(`
             UPDATE meal_config SET
@@ -426,6 +358,15 @@ mealConfigRoutes.post('/', async (req, res) => {
             RETURNING expected_meal_rate,
             temp_meal_lock_offset;
             `, [expected_meal_rate, meal_lock_offset]);
+        
+        const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
+
+        await db.query(`
+            INSERT INTO bulletins (user_id, user_role, title, message)
+            VALUES ($1, $2, $3, $4)
+        `, [userId, 'mm', 'Meal Config Updated',
+            `The meal cutoff time is now ${cutOffTime}, and expected meal rate is ${expected_meal_rate ?? 'not specified'}.`]);
+
         return res.json(config);
     } catch (error) {
         try {

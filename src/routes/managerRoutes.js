@@ -4,35 +4,34 @@ import db from '../middleware/db.js';
 
 const managerRoutes = express.Router();
 
-function verifyToken(req, res) {
-	const token = req.cookies?.token;
-	if (!token) {
-		res.status(401).json({ error: 'Authentication required', redirect: '/authentication.html' });
-		return null;
-	}
+async function isAuthorized(req, res, next) {
 
-	try {
-		const payload = jwt.verify(token, process.env.JWT_SECRET);
-		if (!payload.id) {
-			res.status(401).json({ error: 'Invalid authentication token', redirect: '/authentication.html' });
-			return null;
+    try {
+        const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+
+        const { rows } = await db.query("SELECT status FROM managers WHERE user_id = $1", [decoded.id]);
+
+        if (rows[0]) {
+            return next();
+        } else {
+			return res.status(403).json({
+				error: 'Forbidden',
+				message: 'You do not have permission to access this resource.',
+				redirect: '/dashboard'
+			});
 		}
-		return payload.id;
-	} catch (error) {
-		if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-			res.status(401).json({ error: 'Invalid authentication token', redirect: '/authentication.html' });
-			return null;
-		}
-		throw error;
-	}
+    } catch (error) {
+		console.error('Error in authentication middleware:', error);
+        return res.status(401).json({
+            message: 'Something went wrong with authentication.',
+            redirect: '/authentication.html'
+        });
+    }
 }
-
-
 
 managerRoutes.get('/period', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		const { rows } = await db.query(
 			'SELECT period, status FROM managers WHERE user_id = $1 ORDER BY period',
@@ -50,10 +49,22 @@ managerRoutes.get('/period', async (req, res) => {
 	}
 });
 
+
+
+
+
+
+
+managerRoutes.use(isAuthorized);
+
+
+
+
+
+
 managerRoutes.post('/period', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		const { period, setStatus } = req.body;
 		if (typeof period !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) {
@@ -106,10 +117,8 @@ managerRoutes.post('/period', async (req, res) => {
 
 managerRoutes.get('/day', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
-		
 		const { date } = req.query;
 		if (!date) {
 			return res.status(400).json({ error: 'Date query parameter is required' });
@@ -149,39 +158,74 @@ managerRoutes.get('/day', async (req, res) => {
 
 managerRoutes.get('/month/batch', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
-
 		const { period } = req.query;
 		if (!period || !/^\d{4}-\d{2}$/.test(period)) {
 			return res.status(400).json({ error: 'A valid period query parameter (YYYY-MM) is required' });
 		}
 
 		const { rows } = await db.query(
-			`SELECT
-				u.batch,
-				COALESCE(m.total_meals, 0) AS total_meals,
-				COALESCE(d.total_deposit, 0) AS total_deposit
-			FROM (
+			`
+			WITH batch_list AS (
+				-- Get all available batches
 				SELECT DISTINCT batch
 				FROM users
-			) u
-			LEFT JOIN (
-				SELECT u.batch, COUNT(*) AS total_meals
+			),
+
+			meal_totals AS (
+				-- Calculate total meals per batch for the selected month
+				SELECT
+					u.batch,
+					COUNT(*) AS total_meals
 				FROM meals m
-				JOIN users u ON u.id = m.user_id
-					AND m.meal_date >= ($1 || '-01')::date
-					AND m.meal_date < ($1 || '-01')::date + INTERVAL '1 month'
-				GROUP BY u.batch
-			) m ON m.batch = u.batch
-			LEFT JOIN (
-				SELECT u.batch, SUM(d.amount) AS total_deposit
+				JOIN users u
+					ON u.id = m.user_id
+				WHERE
+					m.meal_date >= ($1 || '-01')::date
+					AND m.meal_date < (
+						($1 || '-01')::date + INTERVAL '1 month'
+					)
+				GROUP BY
+					u.batch
+			),
+
+			deposit_totals AS (
+				-- Calculate total deposits per batch for the selected period
+				SELECT
+					u.batch,
+					SUM(d.amount) AS total_deposit
 				FROM deposits d
-				JOIN users u ON u.id = d.user_id
-					AND d.period = $1
-				GROUP BY u.batch
-			) d ON d.batch = u.batch
-			ORDER BY u.batch`,
+				JOIN users u
+					ON u.id = d.user_id
+				WHERE
+					d.period = $1
+				GROUP BY
+					u.batch
+			)
+
+			-- Combine batch, meal and deposit totals
+			SELECT
+				b.batch,
+
+				COALESCE(m.total_meals, 0) AS total_meals,
+
+				COALESCE(d.total_deposit, 0) AS total_deposit
+
+			FROM batch_list b
+
+			LEFT JOIN meal_totals m
+				ON m.batch = b.batch
+
+			LEFT JOIN deposit_totals d
+				ON d.batch = b.batch
+
+			-- Exclude batches with both zero meals and zero deposits
+			WHERE
+				COALESCE(m.total_meals, 0) > 0
+				OR COALESCE(d.total_deposit, 0) > 0
+
+			ORDER BY
+				b.batch
+			`,
 			[period]
 		);
 
@@ -196,9 +240,6 @@ managerRoutes.get('/month/batch', async (req, res) => {
 
 managerRoutes.get('/month/total-expense', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
-
 		const { period } = req.query;
 		if (!period || !/^\d{4}-\d{2}$/.test(period)) {
 			return res.status(400).json({ error: 'A valid period query parameter (YYYY-MM) is required' });
@@ -224,8 +265,7 @@ managerRoutes.get('/month/total-expense', async (req, res) => {
 
 managerRoutes.post('/calendar', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		const { period, currentBatchOnly } = req.body;
 		if (!period || !/^\d{4}-\d{2}$/.test(period)) {
@@ -276,8 +316,7 @@ managerRoutes.post('/calendar', async (req, res) => {
 
 managerRoutes.post('/users', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		const { period } = req.body;
 		if (!period || !/^\d{4}-\d{2}$/.test(period)) {
@@ -371,9 +410,6 @@ managerRoutes.post('/users', async (req, res) => {
 
 managerRoutes.post('/users/calendar', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
-
 		const { period, user_id } = req.body;
 		if (!period || !/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) {
 			return res.status(400).json({ error: 'A valid period (YYYY-MM) is required' });
@@ -408,9 +444,6 @@ managerRoutes.post('/users/calendar', async (req, res) => {
 
 managerRoutes.post('/users/transactions/', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
-
 		const { user_id, period } = req.body;
 		if (!user_id) {
 			return res.status(400).json({ error: 'user_id is required' });
@@ -440,8 +473,7 @@ managerRoutes.post('/users/transactions/', async (req, res) => {
 
 managerRoutes.post('/users/deposit', async (req, res) => {
 	try {
-		const userId = verifyToken(req, res);
-		if (!userId) return;
+		const userId = jwt.verify(req.cookies.token, process.env.JWT_SECRET).id;
 
 		const { period, user_id, note } = req.body;
 		if (!user_id) {
