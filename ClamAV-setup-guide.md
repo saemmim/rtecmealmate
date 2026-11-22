@@ -1,4 +1,5 @@
-﻿# ClamAV Setup Guide for Windows
+﻿# This setup is ignored in development
+# ClamAV Setup Guide for Windows
 
 ## 1. Download and install the x64 MSI
 
