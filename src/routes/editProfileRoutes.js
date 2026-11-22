@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
 	try {
 		const { rows } = await db.query(
 			`SELECT name, username, department, batch, phone, email, profile_picture, role
-			 FROM users WHERE id = $1 AND status = 'approved' LIMIT 1`,
+			 FROM users WHERE id = $1 AND status IN ('approved', 'archived') LIMIT 1`,
 			[userId]
 		);
 

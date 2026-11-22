@@ -365,7 +365,7 @@ mealConfigRoutes.post('/', async (req, res) => {
             INSERT INTO bulletins (user_id, user_role, title, message)
             VALUES ($1, $2, $3, $4)
         `, [userId, 'mm', 'Meal Config Updated',
-            `The meal cutoff time is now ${cutOffTime}, and expected meal rate is ${expected_meal_rate ?? 'not specified'}.`]);
+            `The meal cutoff time is now ${cutOffTime}, effective after next cycle and expected meal rate is ${expected_meal_rate ?? 'not specified'}.`]);
 
         return res.json(config);
     } catch (error) {
