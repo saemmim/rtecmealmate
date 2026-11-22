@@ -58,5 +58,5 @@ They can:
 
 For live preview vist [here](https://rtecmealmate.onrender.com).
 Dummy Profile:
-Email: `dummyuser@example.com` <button type="button" onclick="navigator.clipboard.writeText('dummyuser@example.com')">Copy</button>
-Password: `password` <button type="button" onclick="navigator.clipboard.writeText('password')">Copy</button>
+Email: `dummyuser@example.com`
+Password: `password`
