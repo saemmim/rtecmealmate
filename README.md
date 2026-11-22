@@ -1,52 +1,62 @@
 # rtecmealmate
-A full stack web app to assist meal related activities for RTEC Boys Hall
+A full-stack web app to assist with meal-related activities for RTEC Boys Hostel.
 
 ## Context
-Once upon a time, there was a boy studying in Rangpur Textile Engineering College. He was enjoing his hostel life. Yet one thing kept whispering in his mind. The meal management system was not efficient enough. How to digitalized this process. This project is the result all of this.
+Once upon a time, there was a boy studying at Rangpur Textile Engineering College. He was enjoying his hostel life. Yet one thing kept whispering in his mind: the meal management system was not efficient enough. How could this process be digitized? This project is the result of that thought.
 
-## What it does?
-This project helps meal managers of RTEC Boys Hostel to easily manage users, count meals, track records and monitor expanses for each month. This automates a significiant portion of tasks related to meal management.
+## What it does
+This project helps meal managers of RTEC Boys Hostel easily manage users, count meals, track records, and monitor expenses for each month. It automates a significant portion of the tasks related to meal management.
 
-## Technical Aspects:
-### Users Roles:
-To properly maintain the meal records other administrative tasks, we have implemented 4 type of user role here.
-1. Normal users
+## Technical Aspects
+
+### User Roles
+To properly maintain meal records and other administrative tasks, four types of user roles have been implemented:
+
+1. Normal Users
 2. Meal Managers
 3. Hall Representatives
 4. Hostel Super
+
 #### Normal Users
 They can:
-- Turn on/off their meals for particular day
-- Turn meal on/off for number of guests if needed
+- Turn on/off their meals for a particular day
+- Turn meals on/off for any number of guests if needed
 - View all their meals for each month
 - View all their transactions for each month
 - View shopping receipts added by managers
 - View news bulletins
-- View individuals serving different roles for clearity
+- View individuals serving different roles for clarity
 
 #### Meal Managers
-Meal managers are assigned monthly basis by hall representatives. They have only access to their particular month dashboard and can only work with that month.  
+Meal managers are assigned on a monthly basis by hall representatives. They only have access to their particular month’s dashboard and can only work with that month.  
 They can:
-- View batch wise total number of meals for a particular day
+- View batch-wise total number of meals for a particular day
 - View total meals per day for that month
-- Add money for users of their respected batch
+- Add money for users of their respective batch
 - View and add shopping receipts
-- View total expanse and deposits for that month 
-- View and add news buletins
+- View total expenses and deposits for that month
+- View and add news bulletins
 
-#### Hall Representative
-Hall representatives are assigned by Hostel Super. They has no expiery date. The hostel super can add or remove them from role when needed. Representatives are selected batch wise. They has only access for their paticular batch.
+#### Hall Representatives
+Hall representatives are assigned by the Hostel Super. They have no expiry date. The Hostel Super can add or remove them from the role when needed. Representatives are selected batch-wise and only have access for their particular batch.  
 They can:
-- View, add and remove meal managers for different months from their own batch
-- View and add new bulletins
+- View, add, and remove meal managers for different months from their own batch
+- View and add news bulletins
 - View shopping receipts
 
 #### Hostel Super
-Hostel supers have the administrative access.
+Hostel Supers have administrative access.
 They can:
-- Approve and Ban users form the site
+- Approve and ban users from the site
 - Archive alumni batches
-- Allow new batches for creating accounts
-- Add or Remove Hall representatives
-- View and add new bulletins
+- Allow new batches to create accounts
+- Add or remove Hall Representatives
+- View and add news bulletins
 - View shopping receipts
+
+---
+
+For live preview vist [here](https://rtecmealmate.onrender.com).
+Dummy Profile:
+Email: `dummyuser@example.com` <button type="button" onclick="navigator.clipboard.writeText('dummyuser@example.com')">Copy</button>
+Password: `password` <button type="button" onclick="navigator.clipboard.writeText('password')">Copy</button>
