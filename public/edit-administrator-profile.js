@@ -85,17 +85,9 @@ async function loadProfile() {
 
         // Profile picture
 
-        if (reply.profile_picture) {
-
-            profileImage.src =
-                reply.profile_picture;
-
-        } else {
-
-            profileImage.src =
-                "/profile-pictures/default-profile-picture.webp";
-        }
-
+        profileImage.src =
+                reply.profile_picture ||
+                "https://knibljndsnrbbiafwybd.supabase.co/storage/v1/object/public/mealmate_bucket/profile-pictures/default-profile-picture.webp";
 
     } catch (error) {
 

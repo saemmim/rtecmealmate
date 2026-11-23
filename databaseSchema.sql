@@ -41,7 +41,8 @@ CREATE TABLE users (
                             'pending',
                             'approved',
                             'banned',
-                            'deleted'
+                            'deleted',
+                            'archived'
                         )
                     ),
 
