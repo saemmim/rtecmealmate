@@ -26,6 +26,7 @@ const API = {
     usersDeposit: "/manager/users/deposit",        // POST { period, user_id, amount, note }
     usersTransactions: "/manager/users/transactions/", // POST { user_id, period }
     usersCalendar: "/manager/users/calendar",      // POST { period, user_id }
+    forceToggleMeal: "/force-toggle-meal",         // POST { user_id, meal_date, toggle_to } or { guest: true, user_id, meal_date, total_guests }
 
     // Batch records: [{ batch, name, status }, ...]
     batches: "/batches",
@@ -1222,7 +1223,7 @@ async function saveMealConfigModal(overlay) {
    first place to check.
 ============================================================================ */
 
-function buildCalendarCellsHtml(period, renderCount) {
+function buildCalendarCellsHtml(period, renderCount, options = {}) {
 
     const [year, month] = period.split("-").map(Number);
 
@@ -1242,11 +1243,21 @@ function buildCalendarCellsHtml(period, renderCount) {
 
         const cellValue = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
+        // options.isClickable(cellValue) -> true renders that day as a
+        // <button data-date="YYYY-MM-DD"> (used by the per-user calendar);
+        // otherwise it is a plain <div>.
+        const clickable = typeof options.isClickable === "function" && options.isClickable(cellValue);
+
+        const classes = `calendar-day ${clickable ? "clickable" : ""} ${cellValue === todayValue ? "today" : ""}`;
+
+        const tag = clickable ? "button" : "div";
+        const attrs = clickable ? ` type="button" data-date="${cellValue}"` : "";
+
         html += `
-            <div class="calendar-day ${cellValue === todayValue ? "today" : ""}">
+            <${tag} class="${classes}"${attrs}>
                 <span class="calendar-day-number">${day}</span>
                 ${renderCount(cellValue)}
-            </div>
+            </${tag}>
         `;
     }
 
@@ -1933,11 +1944,11 @@ function openUserCalendarModal(userId, userName) {
 
     overlay.querySelector("[data-user-calendar-close]").addEventListener("click", close);
 
-    loadUserCalendar(overlay, period, userId);
+    loadUserCalendar(overlay, period, userId, userName);
 }
 
 
-async function loadUserCalendar(overlay, period, userId) {
+async function loadUserCalendar(overlay, period, userId, userName) {
 
     const grid = overlay.querySelector("[data-user-calendar-grid]");
 
@@ -1965,23 +1976,54 @@ async function loadUserCalendar(overlay, period, userId) {
             (Array.isArray(data) ? data : []).map(day => [dateValue(new Date(day.meal_date)), day])
         );
 
-        grid.innerHTML = buildCalendarCellsHtml(period, cellValue => {
+        // Drawn once from the server data. Changes made in the day popup
+        // do not alter the meal counts/check marks shown here.
+        const renderGrid = () => {
 
-            const day = dataByDate.get(cellValue);
+            // Only past dates (not today, not future) are clickable, and
+            // only while the period is open/reopened. YYYY-MM-DD strings
+            // compare correctly as text.
+            const todayValue = dateValue(new Date());
+            const canEdit = isPeriodEditable();
 
-            if (!day) return "";
+            grid.innerHTML = buildCalendarCellsHtml(period, cellValue => {
 
-            const total = (Number(day.normal_meal ?? day.normal_meals) || 0)
-                        + (Number(day.guest_meal ?? day.guest_meals) || 0);
+                const day = dataByDate.get(cellValue);
 
-            if (total <= 0) return "";
+                if (!day) return "";
 
-            if (total === 1) {
-                return `<span class="calendar-day-mark ok" aria-label="1 meal">&#10003;</span>`;
-            }
+                const total = (Number(day.normal_meal ?? day.normal_meals) || 0)
+                            + (Number(day.guest_meal ?? day.guest_meals) || 0);
 
-            return `<span class="calendar-day-mark over" aria-label="${total} meals">${total}</span>`;
-        });
+                if (total <= 0) return "";
+
+                if (total === 1) {
+                    return `<span class="calendar-day-mark ok" aria-label="1 meal">&#10003;</span>`;
+                }
+
+                return `<span class="calendar-day-mark over" aria-label="${total} meals">${total}</span>`;
+
+            }, { isClickable: (cellValue) => canEdit && cellValue < todayValue });
+        };
+
+        renderGrid();
+
+        // Assigned (not addEventListener) so a retry never stacks handlers.
+        grid.onclick = (event) => {
+
+            const cell = event.target.closest(".calendar-day.clickable");
+
+            if (!cell) return;
+
+            const date = cell.dataset.date;
+
+            openDayMealModal({
+                userId,
+                userName,
+                date,
+                day: dataByDate.get(date) || null
+            });
+        };
 
     } catch (error) {
 
@@ -1998,6 +2040,399 @@ async function loadUserCalendar(overlay, period, userId) {
 
 /* ============================================================================
    SECTION: Per-User Calendar Modal                                        END
+============================================================================ */
+
+
+/* ============================================================================
+   SECTION: Day Meal Modal (per-user calendar, one day)                  START
+   ============================================================================
+   Opened by clicking a date in the per-user calendar.
+
+   POST /force-toggle-meal (API.forceToggleMeal)
+
+     Force on/off : { user_id, meal_date: "YYYY-MM-DD", toggle_to: "on" | "off" }
+     Guest meals  : { guest: true, user_id, meal_date: "YYYY-MM-DD", total_guests }
+
+   Both expect a JSON reply containing { ..., message }. The message is shown
+   under the buttons: green for 2xx, red for 4xx/5xx or a network failure,
+   normal text color for anything else.
+
+   Force on/off does not change anything on screen except the response
+   message. Saving a guest value keeps the saved number in the guest chip.
+   Neither touches the calendar grid or the Users tab totals.
+
+   "Meal ON" means normal_meal > 0 for that day. Days missing from the
+   calendar data are treated as OFF with 0 guest meals.
+============================================================================ */
+
+async function postForceToggleMeal(body) {
+
+    try {
+
+        const response = await fetchWithTimeout(
+            API.forceToggleMeal,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                body: JSON.stringify(body)
+            },
+            REQUEST_TIMEOUT
+        );
+
+        let result = null;
+
+        try {
+            result = await response.json();
+        } catch {
+            // No JSON body — fall back to a generic message below.
+        }
+
+        return {
+            ok: response.ok,
+            status: response.status,
+            message: result?.message || (response.ok ? "Updated successfully." : `Request failed: ${response.status}`)
+        };
+
+    } catch (error) {
+
+        console.error("Force toggle meal request failed:", error);
+
+        return { ok: false, status: 0, message: "Could not reach the server. Please try again." };
+    }
+}
+
+
+// In-site confirmation popup (same look as the other modals).
+// Resolves true if confirmed, false if cancelled / dismissed.
+//   paragraphs   : array of plain-text lines, each shown as its own paragraph
+//   confirmClass : extra class for the confirm button ("force-on" / "force-off")
+function showConfirmModal({ title, paragraphs, confirmLabel, confirmClass }) {
+
+    return new Promise((resolve) => {
+
+        const overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+
+        overlay.innerHTML = `
+            <div class="modal-box" role="alertdialog" aria-modal="true" aria-label="${escapeHtml(title)}">
+                <h3 class="modal-title">${escapeHtml(title)}</h3>
+
+                ${paragraphs.map(text => `<p class="confirm-text">${escapeHtml(text)}</p>`).join("")}
+
+                <div class="modal-actions">
+                    <button type="button" class="action-button" data-confirm-cancel>Cancel</button>
+                    <button type="button" class="action-button ${confirmClass || ""}" data-confirm-ok>${escapeHtml(confirmLabel)}</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        const finish = (result) => {
+            document.removeEventListener("keydown", onKeyDown);
+            overlay.remove();
+            resolve(result);
+        };
+
+        const onKeyDown = (event) => {
+            if (event.key === "Escape") finish(false);
+        };
+
+        document.addEventListener("keydown", onKeyDown);
+
+        overlay.addEventListener("click", (event) => {
+            if (event.target === overlay) finish(false);
+        });
+
+        overlay.querySelector("[data-confirm-cancel]").addEventListener("click", () => finish(false));
+        overlay.querySelector("[data-confirm-ok]").addEventListener("click", () => finish(true));
+
+        // Default focus on Cancel so a stray Enter doesn't confirm.
+        overlay.querySelector("[data-confirm-cancel]").focus();
+    });
+}
+
+
+function openDayMealModal({ userId, userName, date, day }) {
+
+    const [year, month, dayOfMonth] = date.split("-").map(Number);
+
+    const dateLabel = new Date(year, month - 1, dayOfMonth).toLocaleDateString(undefined, {
+        weekday: "short", day: "numeric", month: "long", year: "numeric"
+    });
+
+    const state = {
+        mealOn: (Number(day?.normal_meal ?? day?.normal_meals) || 0) > 0,
+        guest: Number(day?.guest_meal ?? day?.guest_meals) || 0,
+        editing: false,
+        busy: null              // null | "force" | "guest"
+    };
+
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+
+    overlay.innerHTML = `
+        <div class="modal-box">
+            <h3 class="modal-title">${escapeHtml(userName)}</h3>
+            <span class="calendar-month-label">${escapeHtml(dateLabel)}</span>
+
+            <div class="day-chip-row">
+                <label class="day-chip-label" for="dayMealChip">Meal</label>
+                <input type="text" id="dayMealChip" class="day-chip" readonly tabindex="-1" aria-readonly="true">
+            </div>
+
+            <div class="day-chip-row">
+                <label class="day-chip-label" for="dayGuestChip">Guest Meals</label>
+                <input type="text" id="dayGuestChip" class="day-chip" readonly inputmode="numeric" autocomplete="off" maxlength="3">
+            </div>
+
+            <div class="day-actions-wrap">
+                <p class="day-toast" role="status" aria-live="polite"></p>
+
+                <div class="day-actions">
+                    <button type="button" class="action-button" data-day-force></button>
+                    <button type="button" class="action-button" data-day-guest></button>
+                </div>
+            </div>
+
+            <p class="form-message day-message" role="status" style="display:none;"></p>
+
+            <div class="modal-actions">
+                <button type="button" class="action-button" data-day-close>Close</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const mealChip = overlay.querySelector("#dayMealChip");
+    const guestChip = overlay.querySelector("#dayGuestChip");
+    const forceButton = overlay.querySelector("[data-day-force]");
+    const guestButton = overlay.querySelector("[data-day-guest]");
+    const toastEl = overlay.querySelector(".day-toast");
+    const messageEl = overlay.querySelector(".day-message");
+
+    const close = () => overlay.remove();
+
+    overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) close();
+    });
+
+    overlay.querySelector("[data-day-close]").addEventListener("click", close);
+
+
+    // The guest textbox as a whole number, or NaN if it isn't one.
+    function parseGuestInput() {
+        const value = guestChip.value.trim();
+        return /^\d+$/.test(value) ? Number(value) : NaN;
+    }
+
+    function showMessage(text, tone) {
+
+        messageEl.textContent = text;
+        messageEl.classList.remove("message-success", "message-error");
+
+        // tone: true = green, false = red, null = normal text color
+        if (tone !== null) {
+            messageEl.classList.add(tone ? "message-success" : "message-error");
+        }
+
+        messageEl.style.display = "block";
+    }
+
+    function clearMessage() {
+        messageEl.style.display = "none";
+    }
+
+    let toastTimer = null;
+
+    function showToast(text) {
+
+        toastEl.textContent = text;
+        toastEl.classList.add("visible");
+
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("visible"), 2600);
+    }
+
+    // Maps an HTTP status to the message color.
+    function toneForStatus(status) {
+        if (status >= 200 && status < 300) return true;
+        if (status >= 400 || status === 0) return false;
+        return null;
+    }
+
+
+    function render() {
+
+        // Meal chip
+        mealChip.value = state.mealOn ? "ON" : "OFF";
+        mealChip.classList.toggle("chip-on", state.mealOn);
+        mealChip.classList.toggle("chip-off", !state.mealOn);
+
+        // Guest chip (the textbox keeps what the user types while editing)
+        if (!state.editing) {
+            guestChip.value = String(state.guest);
+        }
+
+        guestChip.readOnly = !state.editing;
+        guestChip.tabIndex = state.editing ? 0 : -1;
+
+        const shownGuest = Number(guestChip.value) || 0;
+        guestChip.classList.toggle("chip-warn", shownGuest > 0);
+
+        // Force button
+        forceButton.textContent = state.busy === "force"
+            ? "Working..."
+            : (state.mealOn ? "Force Off Meal" : "Force On Meal");
+
+        forceButton.classList.toggle("force-off", state.mealOn);
+        forceButton.classList.toggle("force-on", !state.mealOn);
+        forceButton.disabled = state.busy !== null;
+
+        // Guest button: "Save" (green) only once the value actually differs.
+        const dirty = state.editing && parseGuestInput() !== state.guest;
+
+        guestButton.textContent = state.busy === "guest"
+            ? "Saving..."
+            : (dirty ? "Save" : "Edit Guest Meals");
+
+        guestButton.classList.toggle("force-on", dirty);
+        guestButton.disabled = state.busy !== null;
+
+        // aria-disabled (not the disabled attribute) so a click on it can
+        // still show the explanatory toast.
+        guestButton.classList.toggle("is-disabled", !state.mealOn);
+        guestButton.setAttribute("aria-disabled", String(!state.mealOn));
+    }
+
+
+    // ---- Force ON / OFF Meal -------------------------------------------
+
+    forceButton.addEventListener("click", async () => {
+
+        if (state.busy) return;
+
+        const turningOff = state.mealOn;
+
+        const paragraphs = [
+            turningOff
+                ? `Force off the meal for ${userName} on ${dateLabel}?`
+                : `Force on the meal for ${userName} on ${dateLabel}?`
+        ];
+
+        if (turningOff && state.guest > 0) {
+            paragraphs.push(`${state.guest} guest meal${state.guest === 1 ? "" : "s"} will also be turned off.`);
+        }
+
+        const confirmed = await showConfirmModal({
+            title: turningOff ? "Force Off Meal" : "Force On Meal",
+            paragraphs,
+            confirmLabel: turningOff ? "Force Off" : "Force On",
+            confirmClass: turningOff ? "force-off" : "force-on"
+        });
+
+        if (!confirmed) return;
+
+        clearMessage();
+        state.busy = "force";
+        render();
+
+        const result = await postForceToggleMeal({
+            user_id: userId,
+            meal_date: date,
+            toggle_to: turningOff ? "off" : "on"
+        });
+
+        state.busy = null;
+
+        // The meal status shown here (chip, button label/color, guest value)
+        // is deliberately left as it was: the change doesn't take effect
+        // immediately, so only the response message is shown.
+        render();
+        showMessage(result.message, toneForStatus(result.status));
+    });
+
+
+    // ---- Edit Guest Meals / Save ---------------------------------------
+
+    guestButton.addEventListener("click", async () => {
+
+        if (state.busy) return;
+
+        if (!state.mealOn) {
+            showToast("Meal status needs to be on before adding guest meal.");
+            return;
+        }
+
+        // First click: unlock the textbox and focus it.
+        if (!state.editing) {
+            state.editing = true;
+            clearMessage();
+            render();
+            guestChip.focus();
+            guestChip.select();
+            return;
+        }
+
+        const newValue = parseGuestInput();
+
+        // Unchanged value: the button still reads "Edit Guest Meals".
+        if (newValue === state.guest) {
+            guestChip.focus();
+            return;
+        }
+
+        if (Number.isNaN(newValue)) {
+            showMessage("Enter a whole number (0 or more).", false);
+            guestChip.focus();
+            return;
+        }
+
+        clearMessage();
+        state.busy = "guest";
+        render();
+
+        const result = await postForceToggleMeal({
+            guest: true,
+            user_id: userId,
+            meal_date: date,
+            total_guests: newValue
+        });
+
+        state.busy = null;
+
+        if (result.ok) {
+            state.guest = newValue;
+            state.editing = false;
+        }
+
+        render();
+        showMessage(result.message, toneForStatus(result.status));
+    });
+
+    guestChip.addEventListener("input", () => {
+
+        // Digits only.
+        guestChip.value = guestChip.value.replace(/\D/g, "");
+
+        clearMessage();
+        render();
+    });
+
+    guestChip.addEventListener("keydown", (event) => {
+
+        if (event.key === "Enter") {
+            event.preventDefault();
+            guestButton.click();
+        }
+    });
+
+    render();
+}
+
+/* ============================================================================
+   SECTION: Day Meal Modal (per-user calendar, one day)                    END
 ============================================================================ */
 
 

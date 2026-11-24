@@ -31,8 +31,6 @@ async function isAuthorized(req, res, next) {
     }
 }
 
-batchesRoutes.use(isAuthorized);
-
 batchesRoutes.get('/', async (req, res) => {
 	try {
 		const { rows } = await db.query(`
@@ -47,6 +45,8 @@ batchesRoutes.get('/', async (req, res) => {
 		res.status(500).json({ error: 'Failed to retrieve batches' });
 	}
 });
+
+batchesRoutes.use(isAuthorized);
 
 batchesRoutes.post('/', async (req, res) => {
 	const batches = req.body;

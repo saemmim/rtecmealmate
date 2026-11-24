@@ -1235,6 +1235,7 @@ button.options-item:disabled:hover {
 /* Like .form-error, but color depends on the backend's response status */
 .form-message {
     margin: -4px 0 14px;
+    text-align: center;
 
     font-size: 12.5px;
 }
@@ -1552,6 +1553,193 @@ button.options-item:disabled:hover {
 
 .calendar-day.today {
     border: 1.5px solid var(--text-color);
+}
+
+/* Per-user calendar: each day is a button that opens the day popup */
+.calendar-day.clickable {
+    padding: 0;
+
+    border: 1.5px solid transparent;
+
+    font: inherit;
+    color: inherit;
+
+    cursor: pointer;
+
+    transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.calendar-day.clickable:hover {
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.calendar-day.clickable:active {
+    transform: scale(0.95);
+}
+
+.calendar-day.clickable:focus-visible {
+    outline: 2px solid var(--text-color);
+    outline-offset: 1px;
+}
+
+.calendar-day.clickable.today {
+    border-color: var(--text-color);
+}
+
+
+/* =========================================
+   Day popup (opened from the per-user calendar)
+========================================= */
+
+.day-chip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 12px;
+}
+
+.day-chip-label {
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+/* Chips are real text inputs so the guest value can be edited in place */
+.day-chip {
+    width: 88px;
+
+    padding: 7px 10px;
+
+    text-align: center;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    border: 1.5px solid var(--input-border);
+    border-radius: 999px;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: default;
+}
+
+.day-chip:read-only {
+    outline: none;
+}
+
+/* Editable state (guest chip after "Edit Guest Meals") */
+.day-chip:not(:read-only) {
+    cursor: text;
+
+    border-color: var(--text-color);
+    box-shadow: 0 0 0 3px var(--shadow-color);
+}
+
+.day-chip.chip-on {
+    color: var(--success-color);
+    border-color: var(--success-color);
+    background: color-mix(in srgb, var(--success-color) 14%, transparent);
+}
+
+.day-chip.chip-off,
+.day-chip.chip-warn {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+    background: color-mix(in srgb, var(--danger-color) 12%, transparent);
+}
+
+/* The two action buttons share the row 50 / 50 */
+.day-actions-wrap {
+    position: relative;
+
+    margin-top: 18px;
+}
+
+.day-actions {
+    display: flex;
+
+    gap: 10px;
+}
+
+.day-actions .action-button {
+    flex: 1 1 0;
+
+    width: 50%;
+    min-width: 0;
+    height: 40px;
+
+    padding: 0 8px;
+}
+
+.action-button.force-on {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: var(--surface-color);
+}
+
+.action-button.force-off {
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+    color: var(--surface-color);
+}
+
+/* Looks disabled but stays clickable so it can explain itself */
+.action-button.is-disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
+}
+
+.action-button.is-disabled:hover {
+    transform: none;
+}
+
+.day-toast {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    z-index: 2;
+
+    width: max-content;
+    max-width: 100%;
+
+    margin: 0;
+    padding: 8px 12px;
+
+    background: var(--button-bg);
+    color: var(--button-text);
+
+    border-radius: 9px;
+
+    font-size: 12.5px;
+    text-align: center;
+
+    opacity: 0;
+    transform: translate(-50%, 4px);
+    pointer-events: none;
+
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.day-toast.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.form-message.day-message {
+    margin: 12px 0 0;
+}
+
+/* In-site confirmation popup */
+.confirm-text {
+    margin: 0 0 8px;
+
+    font-size: 13.5px;
+    line-height: 1.5;
 }
 
 .calendar-filter-row {

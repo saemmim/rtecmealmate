@@ -326,6 +326,23 @@ a {
     border-color: var(--tab-active-bg);
 }
 
+.bottom-tab-badge[hidden] {
+    display: none;
+}
+
+/* The Options tab's own badge is redundant while Options is open,
+   since the count is shown next to Meal Requests there. */
+.bottom-tab.active .bottom-tab-badge {
+    display: none;
+}
+
+/* Badge + chevron grouped at the right end of an options row */
+.options-item-end {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
 
 
 /* =========================================

@@ -98,10 +98,10 @@ managerRoutes.post('/period', async (req, res) => {
 
 		const { rows } = await db.query(
 			`UPDATE managers
-			SET status = $3, updated_at = NOW()
-			WHERE user_id = $1 AND period = $2
+			SET status = $1, updated_at = NOW()
+			WHERE user_id = $2 AND period = $3
 			RETURNING period, status`,
-			[userId, period, setStatus]
+			[setStatus, userId, period]
 		);
 
 		if (rows.length === 0) {
@@ -110,6 +110,7 @@ managerRoutes.post('/period', async (req, res) => {
 
 		return res.status(200).json(rows[0]);
 	} catch (error) {
+		console.error('Error updating manager period status:', error);
 		return res.status(500).json({ error: 'Failed to update manager period status' });
 	}
 });

@@ -23,8 +23,6 @@ authRoutes.post('/login', async (req, res) => {
         }
 
         const normalizedEmail = loginEmail.trim().toLowerCase();
-
-        console.log('Attempting login for email:', normalizedEmail);
         
         const user = await db.query(
             'SELECT id, username, password_hash, role FROM users WHERE email = $1 AND status <> $2',

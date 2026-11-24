@@ -136,18 +136,8 @@ async function dailyTaskScheduler () {
 
 async function autoAddNextDayMeals(date) {
     try {
-        await db.query (`
-            INSERT INTO meals (user_id, meal_date, guest)
-            SELECT
-                user_id,
-                meal_date + INTERVAL '1 day',
-                guest
-            FROM meals
-            WHERE meal_date = $1 AND guest <> true;
-        `, [date]);
-
         let {rows: [mealConfig]} = await db.query('SELECT * FROM meal_config WHERE id = 1;');
-        
+
         try {
 
             if (mealConfig.temp_meal_lock_offset !== null) {
@@ -168,6 +158,16 @@ async function autoAddNextDayMeals(date) {
         } catch (error) {
             console.error('Error occurred during write operation:', error);
         }
+
+        await db.query (`
+            INSERT INTO meals (user_id, meal_date, guest)
+            SELECT
+                user_id,
+                meal_date + INTERVAL '1 day',
+                guest
+            FROM meals
+            WHERE meal_date = $1 AND guest <> true;
+        `, [date]);
         
         console.log('Daily task executed successfully for date:', date);
         dailyTaskScheduler();

@@ -6,10 +6,13 @@ const countUsersRouter = express.Router();
 
 countUsersRouter.get('/', async (req, res) => {
 	try {
-		const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
-		const { rows } = await db.query("SELECT status FROM managers WHERE user_id = $1", [decoded.id]);
+		const currentPeriod = new Date().toISOString().slice(0, 7);
 
-		if (rows[0].status !== 'open') {
+		const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+		const { rows } = await db.query("SELECT status FROM managers WHERE user_id = $1 and period = $2",
+			[decoded.id, currentPeriod]);
+			
+		if (rows[0]?.status !== 'open' && rows[0]?.status !== 'reopened') {
 			return res.status(403).json({
 				error: 'Forbidden',
 				message: 'You do not have permission to access this resource.',
@@ -17,7 +20,6 @@ countUsersRouter.get('/', async (req, res) => {
 			});
 		}
 	
-		const currentPeriod = new Date().toISOString().slice(0, 7);
         const { rows: currentUser } = await db.query(
 			`SELECT u.batch
 			FROM users u

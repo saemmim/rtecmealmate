@@ -28,6 +28,8 @@ import pendingPPRoutes from './routes/pendingPPRoutes.js';
 import countUsersRoutes from './routes/countUsersRoutes.js';
 import roleRoutes from './routes/rolesRoutes.js';
 
+import forceToggleMealRoutes from './routes/forceToggleMealRoutes.js';
+
 import fs from 'fs';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
@@ -152,82 +154,18 @@ app.use('/profile-picture', profilePictureRoutes);
 app.use('/count-users', countUsersRoutes);
 app.use('/roles', roleRoutes);
 
-
-app.get('/month', (req, res) => {
-    const { period } = req.query;
-    if (typeof period !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) {
-        return res.status(400).json({ error: 'period must be in yyyy-mm format' });
-    }
-
-    return res.json({ period });
-});
+app.use('/force-toggle-meal', forceToggleMealRoutes);
 
 
+// app.get('/month', (req, res) => {
+//     const { period } = req.query;
+    
+//     if (typeof period !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) {
+//         return res.status(400).json({ error: 'period must be in yyyy-mm format' });
+//     }
 
-/*
-// ====================== AUTHENTICATION CHECK ======================
-
-// PUBLIC ROUTES
-// These routes do NOT require authentication
-const publicPaths = [
-  '/authentication.html',
-  '/auth/login',
-  '/auth/signup',
-  // add more public routes if needed
-];
-
-// Middleware to check authentication for protected routes
-app.use((req, res, next) => {
-  // 1. Check if the current path is public
-  const isPublic = publicPaths.some(path => req.path === path);
-
-  // 2. Extract token (from cookie or Authorization header)
-  const token = req.cookies?.token;
-
-  let authenticated = false;
-  let decodedUser = null;
-
-  // 3. Verify token (only if token exists)
-  if (token && process.env.JWT_SECRET) {
-    try {
-      decodedUser = jwt.verify(token, process.env.JWT_SECRET);
-      authenticated = true;
-      req.user = decodedUser; // attach user info to request
-    } catch (err) {
-      authenticated = false;
-    }
-  }
-
-  // 4. Already logged-in user trying to visit login page → redirect to dashboard
-  if (authenticated && (req.path === '/' || req.path === '/authentication.html')) {
-    return res.redirect('/dashboard.html');
-  }
-
-  // 5. Public route → allow
-  if (isPublic) {
-    return next();
-  }
-
-  // 6. Protected route + authenticated → allow
-  if (authenticated) {
-    return next();
-  }
-
-  // 7. Not authenticated
-  //    - API request → return 401 JSON
-  //    - Webpage → redirect to login
-
-  if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json')) {
-    return res.status(401).json({
-      success: false,
-      message: 'Unauthorized. Please login first.'
-    });
-  }
-
-  // Webpage
-  return res.redirect('/authentication.html');
-});
-*/
+//     return res.json({ period });
+// });
 
 
 

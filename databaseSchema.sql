@@ -127,7 +127,7 @@ CREATE TABLE managers (
                             'open',
                             'closed',
                             'reopened',
-                            'reopen'
+                            'reopen',
                             'close'
                         )
                     ),
@@ -185,8 +185,47 @@ CREATE INDEX idx_meals_meal_date
 
 
 
+
 -- =============================================
--- 5. DEPOSITS
+-- 5. PENDING MEALS
+-- =============================================
+CREATE TABLE pending_meals (
+    id              BIGSERIAL PRIMARY KEY,
+
+    user_id         BIGINT NOT NULL
+                    REFERENCES users(id),
+
+    meal_date       DATE NOT NULL,
+
+    guest           BOOLEAN NOT NULL DEFAULT FALSE,
+
+    guests_status   VARCHAR(16) DEFAULT NULL, -- from number to number.
+
+    toggle_to       VARCHAR(3)
+                    CHECK (
+                        toggle_to IN (
+                            'on',
+                            'off'
+                        )
+                    ),
+
+    requested_by    BIGINT NOT NULL
+                    REFERENCES users(id),
+
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- Only one normal (non-guest) meal
+-- per user per day.
+CREATE UNIQUE INDEX unique_normal_pending_meals_per_day
+    ON pending_meals (user_id, meal_date)
+    WHERE guest = FALSE;
+
+
+
+-- =============================================
+-- 6. DEPOSITS
 -- =============================================
 CREATE TABLE deposits (
     id              BIGSERIAL PRIMARY KEY,
@@ -225,7 +264,7 @@ CREATE INDEX idx_deposits_period
 
 
 -- =============================================
--- 6. RECEIPTS
+-- 7. RECEIPTS
 -- =============================================
 CREATE TABLE receipts (
     id              BIGSERIAL PRIMARY KEY,
@@ -254,7 +293,7 @@ CREATE INDEX idx_receipts_receipt_date
 
 
 -- =============================================
--- 7. RECEIPT ITEMS
+-- 8. RECEIPT ITEMS
 -- =============================================
 CREATE TABLE receipt_items (
     id              BIGSERIAL PRIMARY KEY,
@@ -278,7 +317,7 @@ CREATE INDEX idx_receipt_items_receipt_id
 
 
 -- =============================================
--- 8. BULLETINS
+-- 9. BULLETINS
 -- =============================================
 CREATE TABLE bulletins (
     id              BIGSERIAL PRIMARY KEY,
@@ -313,7 +352,7 @@ CREATE TABLE bulletins (
 
 
 -- =============================================
--- 9. MEAL CONFIGURATIONS
+-- 10. MEAL CONFIGURATIONS
 -- =============================================
 CREATE TABLE meal_config (
     id                      INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),

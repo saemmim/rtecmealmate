@@ -37,6 +37,8 @@ const API = {
 
     managerPeriods: "/manager/period",   // GET
 
+    mealRequestsTotal: "/force-toggle-meal/proceed/total",   // GET -> { pending_meals: number }
+
     logout: "/auth/logout"
 };
 
@@ -102,6 +104,9 @@ function activateSection(sectionName) {
     });
 
     initializeSection(sectionName);
+
+    // Keep the Meal Requests badge current as the user moves around.
+    refreshMealRequestsBadge();
 }
 
 
@@ -1448,6 +1453,74 @@ function setupOptions() {
 
 
 /* ============================================================================
+   SECTION: Meal Requests Badge                                          START
+   ============================================================================
+   GET /force-toggle-meal/proceed/total -> { pending_meals: number }
+
+   The count is shown in two places:
+     - next to the "Meal Requests" row in the Options tab
+     - on the Options bottom tab (hidden by CSS while that tab is active)
+============================================================================ */
+
+const mealRequestsBadge = document.getElementById("mealRequestsBadge");
+const optionsTabBadge = document.getElementById("optionsBadge");
+
+
+function renderMealRequestsBadge(total) {
+
+    const text = total > 99 ? "99+" : String(total);
+
+    [mealRequestsBadge, optionsTabBadge].forEach(badge => {
+
+        if (!badge) {
+            return;
+        }
+
+        if (total > 0) {
+            badge.textContent = text;
+            badge.hidden = false;
+        } else {
+            badge.hidden = true;
+        }
+    });
+}
+
+
+async function refreshMealRequestsBadge() {
+
+    try {
+
+        const response = await fetchWithTimeout(
+            API.mealRequestsTotal,
+            { method: "GET", headers: { "Accept": "application/json" } },
+            REQUEST_TIMEOUT
+        );
+
+        if (!response.ok) {
+            throw new Error(`Request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const total = Number(data?.pending_meals);
+
+        if (!Number.isFinite(total)) {
+            throw new Error("Invalid pending_meals value.");
+        }
+
+        renderMealRequestsBadge(total);
+
+    } catch (error) {
+        console.error("Failed to load pending meal requests:", error);
+        renderMealRequestsBadge(0);
+    }
+}
+
+/* ============================================================================
+   SECTION: Meal Requests Badge                                            END
+============================================================================ */
+
+
+/* ============================================================================
    SECTION: Initialize                                                   START
    ============================================================================ */
 
@@ -1461,6 +1534,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Select Managers is the default active tab for this dashboard.
     initializeSection("managers");
+
+    // Needs to show on the Options tab even before it has been opened.
+    refreshMealRequestsBadge();
 });
 
 /* ============================================================================
