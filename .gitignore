@@ -1,7 +1,0 @@
-.env
-projectOutline.md
-test.rest
-package-lock.json
-ClamAV-setup-guide.md
-databasePopulate.sql
-.gitignore
