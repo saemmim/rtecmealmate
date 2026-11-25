@@ -277,7 +277,8 @@ forceToggleMealRoutes.post('/proceed', async (req, res) => {
         const request = rows[0];
 
         if (hrBatch.is_eldest){
-            if (batch > request.batch) return res.status(400).json({ message: "Not permitted" })
+            // Do not allow to proceed for yonger batches. They should have their own representatives.
+            if (batch < request.batch) return res.status(400).json({ message: "Not permitted!" })
         }
         else if (batch == request.batch){ /*continue*/ }
         else return res.status(400).json({ message: "Not permitted" })
