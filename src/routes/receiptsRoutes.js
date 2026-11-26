@@ -127,6 +127,7 @@ receiptsRoutes.post('/', uploadReceiptImage,
 		if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
 			return res.status(401).json({ error: 'Invalid or expired session. Please log in again.' });
 		}
+		console.error(err);
 		return res.status(500).json({ error: 'Failed to create receipt' });
 	} finally {
 		client?.release();
@@ -190,7 +191,6 @@ receiptsRoutes.post('/edit', uploadReceiptImageIfPresent, async (req, res) => {
 
 		
 		const imageProvided = Boolean(req.file?.buffer);
-		console.log('Image file provided:', imageProvided, '---');
 		const imageUrl = imageProvided ? await processReceiptImage(req.file.buffer) : null;
 		client = await db.connect();
 		await client.query('BEGIN');
